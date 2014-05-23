@@ -1,0 +1,8 @@
+.coverage
+.ropeproject
+.vagrant
+*.swp
+htmlcov
+__pycache__
+*.pyc
+*.egg-info
