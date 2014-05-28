@@ -9,6 +9,9 @@ setup(
     ],
     test_suite="mbm",
     install_requires={
+        "docopt",
+        "python-tumblpy",
+        "twitter",
     },
     entry_points={
         "console_scripts": [
