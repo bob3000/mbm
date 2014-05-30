@@ -33,8 +33,7 @@ def load_tests(loader, tests, pattern):
             fn, module_relative=False, globs=globs,
             optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
 
-    unit_tests = loader.discover(start_dir="{}/tests".format(pwd))
-    tests.addTests(unit_tests)
+    loader.discover(start_dir="{}/tests".format(pwd))
     return tests
 
 
