@@ -6,12 +6,10 @@ setup(
     license="GNU GPL v3",
     packages=[
         "mbm",
+        "mbm.tests",
     ],
     test_suite="mbm",
     install_requires={
-        "docopt",
-        "python-tumblpy",
-        "twitter",
     },
     entry_points={
         "console_scripts": [
@@ -25,9 +23,9 @@ setup(
         "Intended Audience :: End Users/Desktop",
         "Topic :: Internet :: WWW/HTTP :: Site Management",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-        'Operating System :: POSIX :: BSD :: FreeBSD',
+        "Operating System :: POSIX :: BSD :: FreeBSD",
         "Operating System :: POSIX :: Linux",
-        'Operating System :: MacOS :: MacOS X',
+        "Operating System :: MacOS :: MacOS X",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
