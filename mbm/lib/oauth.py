@@ -48,6 +48,6 @@ class OAuth():
                                  urllib.parse.quote(headers_n_params_str)])
         signing_key = "&".join([urllib.parse.quote(self.consumer_secret),
                                 urllib.parse.quote(self.token_secret)])
-        return base64.b64encode(hmac.new(signing_key.encode(),
-                                         msg=sig_base_str.encode(),
-                                         digestmod=hashlib.sha1).digest())
+        return base64.b64encode(
+            hmac.new(signing_key.encode(), msg=sig_base_str.encode(),
+                     digestmod=hashlib.sha1).digest()).decode()
