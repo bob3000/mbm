@@ -2,4 +2,8 @@ language: python
 python:
   - "3.3"
   - "3.4"
-script: python3 setup.py test
+install:
+  - pip install coveralls
+script: make coverage
+after_success:
+  coveralls
