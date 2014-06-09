@@ -4,8 +4,9 @@ import urllib.request
 
 class Api():
 
-    def __init__(self, url_prefix=""):
+    def __init__(self, oauth, url_prefix=""):
         self.url_prefix = url_prefix
+        self.oauth = oauth
 
     def __getattr__(self, name):
         self.current_route = name.replace("_", "/")
@@ -16,16 +17,20 @@ class Api():
         params = {k: v for k, v in kwargs.items() if k != "post_data"}
         url = self._url_from_method(params)
         if post_data:
-            res = urllib.request.urlopen(url, data=post_data)
+            req = urllib.request.Request(
+                url, data=post_data, method="POST")
+            req = self.oauth.authorize_request(req)
+            res = urllib.request.urlopen(req, data=post_data)
         else:
-            res = urllib.request.urlopen(url)
+            req = urllib.request.Request(url)
+            req = self.oauth.authorize_request(req)
+            res = urllib.request.urlopen(req)
         return self._handle_request(res)
 
     def _url_from_method(self, params):
         url = "/".join([self.url_prefix.rstrip("/"), self.current_route])
         if params:
-            params = ["=".join(map(str, e)) for e in params.items()]
-            params.sort()
+            params = sorted(["=".join(map(str, e)) for e in params.items()])
             params = "&".join(params)
             url = "?".join([url, params])
         return url
