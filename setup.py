@@ -27,7 +27,6 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Operating System :: MacOS :: MacOS X",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Topic :: System :: Archiving :: Packaging",
         "Intended Audience :: End Users/Desktop",
