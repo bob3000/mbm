@@ -52,6 +52,14 @@ class Config(abc.ABC):
 
 
 class Global(Config):
+    """
+    Manages global configurations and holds a dictionary of account objects.
+
+    >>> cfg = Global("/path/to/config_file", "/path/to/account_configs")
+    >>> cfg.create_account("my_account")
+
+    >>> cfg.accounts['my_account'].token
+    """
 
     DEFAULT_CONFIG = {'accounts_path': '',
                       }
@@ -60,7 +68,7 @@ class Global(Config):
         super().__init__(file_path)
         self.file_path = file_path
         self.accounts_path = accounts_path
-        self.accounts = {i.split("/")[-1][:-4]:Account(i) for i in
+        self.accounts = {i.split("/")[-1][:-4]: Account(i) for i in
                          os.listdir(accounts_path) if i.endswith(".ini")}
 
     def create_account(self, name):
@@ -82,6 +90,10 @@ class Global(Config):
 
 
 class Account(Config):
+    """
+    Account credentials and configurations. Accounts are supposed to be managed
+    by an instance of the Global class.
+    """
 
     DEFAULT_CONFIG = {'token': '',
                       'token_secret': '',

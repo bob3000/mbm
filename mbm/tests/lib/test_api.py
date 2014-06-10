@@ -26,13 +26,13 @@ class ApiTestCase(unittest.TestCase):
         self.oauth = self.oauth.authorize_request = lambda x: x
 
     def test_api_call(self):
-        api = mbm.lib.api.Api(self.oauth, url_prefix="http://some.url")
+        api = mbm.lib.api.Api(self.oauth, "http://some.url")
         api.posts_queue(api_key="asdf98", some="value")
         urllib.request.Request.assert_called_with(
             "http://some.url/posts/queue?api_key=asdf98&some=value")
 
     def test_api_call_with_payload(self):
-        api = mbm.lib.api.Api(self.oauth, url_prefix="http://some.url")
+        api = mbm.lib.api.Api(self.oauth, "http://some.url")
         api.posts(api_key="asdf98",
                   post_data={"type": "text", "title": "My new bike"})
         urllib.request.Request.assert_called_with(
@@ -40,7 +40,7 @@ class ApiTestCase(unittest.TestCase):
             data={"type": "text", "title": "My new bike"}, method="POST")
 
     def test_wrong_content_type(self):
-        api = mbm.lib.api.Api(self.oauth, url_prefix="http://some.url")
+        api = mbm.lib.api.Api(self.oauth, "http://some.url")
         self.http_response.getheaders = \
             lambda: [("content-type", "text/html")]
         attrs = {'urlopen.return_value': self.http_response}
@@ -49,7 +49,7 @@ class ApiTestCase(unittest.TestCase):
             api.posts_queue(api_key="asdf98", some="value")
 
     def test_wrong_payload(self):
-        api = mbm.lib.api.Api(self.oauth, url_prefix="http://some.url")
+        api = mbm.lib.api.Api(self.oauth, "http://some.url")
         self.http_response.read = lambda: '<html></html>'
         attrs = {'urlopen.return_value': self.http_response}
         urllib.request.configure_mock(**attrs)

@@ -10,6 +10,9 @@ import urllib.request
 
 
 class OAuth():
+    """
+    Authenticate a HTTP request with OAuth headers
+    """
 
     def __init__(self, consumer_key, consumer_secret, token, token_secret):
         self.consumer_key = consumer_key
@@ -18,6 +21,9 @@ class OAuth():
         self.token_secret = token_secret
 
     def authorize_request(self, request):
+        """
+        Takes a request and returns it with the necessary OAuth headers
+        """
         oauth_headers = {}
         oauth_headers['oauth_consumer_key'] = self.consumer_key
         oauth_headers['oauth_nonce'] = self.nonce()

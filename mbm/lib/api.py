@@ -3,9 +3,30 @@ import urllib.request
 
 
 class Api():
+    """
+    Translates method names into api routes. Therefore wrong method calls will
+    result in wrong api calls.
 
-    def __init__(self, oauth, url_prefix=""):
-        self.url_prefix = url_prefix
+    In order to issue a GET request to
+    'http://api.domain.com/posts/text?api_token=123'
+    you would do the following:
+
+    >>> api = Api(oauth, "http://api.domain.com")
+    >>> api.posts_text(api_token="abc123")
+    <ApiResponse ...>
+
+    All given method parameters are turned to URL parameters.
+
+    Adding a parameter named 'post_data' with a dictionary as it's value will
+    result in a POST request with a json body taken form the given dictionary.
+
+    >>> api.posts_text(post_data={'name': 'new post',
+    ...                           'content': 'post content'})
+    <ApiResponse ...>
+    """
+
+    def __init__(self, oauth, base_url):
+        self.base_url = base_url
         self.oauth = oauth
 
     def __getattr__(self, name):
@@ -28,7 +49,7 @@ class Api():
         return self._handle_request(res)
 
     def _url_from_method(self, params):
-        url = "/".join([self.url_prefix.rstrip("/"), self.current_route])
+        url = "/".join([self.base_url.rstrip("/"), self.current_route])
         if params:
             params = sorted(["=".join(map(str, e)) for e in params.items()])
             params = "&".join(params)
