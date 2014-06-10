@@ -57,12 +57,14 @@ class GlobalConfigTestCase(unittest.TestCase):
         self.assertListEqual(os.listdir(self.tmp_dir.name), ["accounts"])
 
     def test_account_equality(self):
-        self.assertEqual(mbm.config.Account("path", "name"),
-                         mbm.config.Account("path123", "name"))
-        self.assertNotEqual(mbm.config.Account("path", "other_name"),
-                            mbm.config.Account("path123", "name"))
+        path = os.path.join(self.tmp_dir.name, "path")
+        other_path = os.path.join(self.tmp_dir.name, "other_path")
+        self.assertEqual(mbm.config.Account(path, "name"),
+                         mbm.config.Account(other_path, "name"))
+        self.assertNotEqual(mbm.config.Account(path, "name"),
+                            mbm.config.Account(other_path, "other_name"))
         with self.assertRaises(TypeError):
-            mbm.config.Account("path", "name") == "string"
+            mbm.config.Account(path, "name") == "string"
 
     def tearDown(self):
         self.tmp_dir.cleanup()
