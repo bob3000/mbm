@@ -4,8 +4,7 @@ import urllib.request
 
 class Api():
     """
-    Translates method names into api routes. Therefore wrong method calls will
-    result in wrong api calls.
+    Translates method names into api routes and issues an request.
 
     In order to issue a GET request to
     'http://api.domain.com/posts/text?api_token=123'

@@ -2,16 +2,18 @@
 Contains account configuration and OAuth credentials
 """
 
-import abc
 import configparser
+import importlib
 import os
+
+import mbm.provider
 
 
 CONSUMER_KEY = ""
 CONSUMER_SECRET = ""
 
 
-class Config(abc.ABC):
+class Config():
 
     def __init__(self, file_path):
         self.file_path = file_path
@@ -22,33 +24,15 @@ class Config(abc.ABC):
         self.config['DEFAULT'] = {}
         os.remove(self.file_path)
 
-    def new(self):
+    def new(self, updates=None):
+        updates = updates if updates else {}
         self.config['DEFAULT'] = self.DEFAULT_CONFIG
+        self.config['DEFAULT'].update(updates)
         self.write()
 
     def write(self):
         with open(self.file_path, 'w') as conf_file:
             self.config.write(conf_file)
-
-    def __getattr__(self, name):
-        if ("config" in self.__dict__ and
-                name in dict(self.config['DEFAULT'])):
-            return self.config['DEFAULT'][name]
-        raise AttributeError
-
-    def __setattr__(self, name, value):
-        try:
-            self.config['DEFAULT'][name] = value
-            self.write()
-        except (AttributeError, TypeError):
-            super().__setattr__(name, value)
-
-    def __delattr__(self, name):
-        try:
-            del self.config['DEFAULT'][name]
-            self.write()
-        except (AttributeError, KeyError):
-            super().__delattr__(name)
 
 
 class Global(Config):
@@ -61,21 +45,20 @@ class Global(Config):
     >>> cfg.accounts['my_account'].token
     """
 
-    DEFAULT_CONFIG = {'accounts_path': '',
-                      }
+    DEFAULT_CONFIG = {}
 
     def __init__(self, file_path, accounts_path):
         super().__init__(file_path)
         self.file_path = file_path
         self.accounts_path = accounts_path
-        self.accounts = {i.split("/")[-1][:-4]: Account(i) for i in
+        self.accounts = {i.split("/")[-1][:-4]: account_factory(i) for i in
                          os.listdir(accounts_path) if i.endswith(".ini")}
 
-    def create_account(self, name):
+    def create_account(self, name, account_type=None):
         if name in self.accounts:
             raise AccountException("Account {} already exists".format(name))
         config_path = os.path.join(self.accounts_path, name + ".ini")
-        account = Account(config_path, name)
+        account = account_factory(config_path, account_type)
         account.new()
         self.accounts[name] = account
         return account
@@ -84,9 +67,24 @@ class Global(Config):
         if name not in self.accounts:
             raise AccountException("Unknown account: {}".format(name))
         config_path = os.path.join(self.accounts_path, name + ".ini")
-        account = Account(config_path, name)
+        account = account_factory(config_path)
         account.delete()
         del self.accounts[name]
+
+
+def account_factory(conf_file_path, account_type=None):
+    name = conf_file_path.split("/")[-1][:-4]
+    if not account_type:
+        cfg_parser = configparser.ConfigParser()
+        cfg_parser.read(conf_file_path)
+        try:
+            account_type = cfg_parser['DEFAULT']['account_type']
+        except KeyError:
+            raise AccountException(
+                "No type specified in config file {}".format(conf_file_path))
+    importlib.import_module("mbm.provider.{}".format(account_type))
+    provider = getattr(mbm.provider, account_type)
+    return provider.Account(conf_file_path, name)
 
 
 class Account(Config):
@@ -95,18 +93,15 @@ class Account(Config):
     by an instance of the Global class.
     """
 
-    DEFAULT_CONFIG = {'token': '',
+    DEFAULT_CONFIG = {'username': '',
+                      'account_type': 'tumblr',
+                      'token': '',
                       'token_secret': '',
                       }
 
     def __init__(self, file_path, name):
         super().__init__(file_path)
         self.name = name
-
-    def __eq__(self, other):
-        if not isinstance(other, Account):
-            raise TypeError
-        return self.name == other.name
 
 
 class AccountException(Exception):

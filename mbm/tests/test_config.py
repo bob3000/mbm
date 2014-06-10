@@ -4,11 +4,14 @@ import os.path
 import unittest
 import tempfile
 import mbm.config
+import mbm.provider.tumblr
 
 
 class GlobalConfigTestCase(unittest.TestCase):
 
     def setUp(self):
+        self.real_tumblr_account = mbm.provider.tumblr.Account
+        mbm.provider.tumblr.Account = mbm.config.Account
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.conf_file = os.path.join(self.tmp_dir.name, 'test_config.ini')
         self.accounts_dir = os.path.join(self.tmp_dir.name, "accounts")
@@ -18,9 +21,15 @@ class GlobalConfigTestCase(unittest.TestCase):
                                         self.accounts_dir)
 
     def test_accounts(self):
+        self.config.new()
+        self.assertIn(self.conf_file.split("/")[-1],
+                      os.listdir(self.tmp_dir.name))
+        self.assertDictEqual(mbm.config.Global.DEFAULT_CONFIG,
+                             dict(self.config.config['DEFAULT']))
+
         self.assertListEqual(os.listdir(self.accounts_dir), [])
         self.assertDictEqual(self.config.accounts, {})
-        self.config.create_account("account1")
+        self.config.create_account("account1", account_type="tumblr")
         self.assertIn("account1", self.config.accounts)
         self.assertListEqual(os.listdir(self.accounts_dir), ["account1.ini"])
         with self.assertRaises(mbm.config.AccountException):
@@ -30,13 +39,6 @@ class GlobalConfigTestCase(unittest.TestCase):
         self.assertDictEqual(self.config.accounts, {})
         with self.assertRaises(mbm.config.AccountException):
             self.config.delete_account("account1")
-
-    def test_new(self):
-        self.config.new()
-        self.assertIn(self.conf_file.split("/")[-1],
-                      os.listdir(self.tmp_dir.name))
-        self.assertDictEqual(mbm.config.Global.DEFAULT_CONFIG,
-                             dict(self.config.config['DEFAULT']))
 
     def test_modify(self):
         with self.assertRaises(AttributeError):
@@ -52,19 +54,17 @@ class GlobalConfigTestCase(unittest.TestCase):
             self.config.new_attribute
 
     def test_delete(self):
+        self.config.new()
         self.config.delete()
         self.assertEqual(dict(self.config.config['DEFAULT']), {})
         self.assertListEqual(os.listdir(self.tmp_dir.name), ["accounts"])
 
-    def test_account_equality(self):
-        path = os.path.join(self.tmp_dir.name, "path")
-        other_path = os.path.join(self.tmp_dir.name, "other_path")
-        self.assertEqual(mbm.config.Account(path, "name"),
-                         mbm.config.Account(other_path, "name"))
-        self.assertNotEqual(mbm.config.Account(path, "name"),
-                            mbm.config.Account(other_path, "other_name"))
-        with self.assertRaises(TypeError):
-            mbm.config.Account(path, "name") == "string"
+    def test_not_type_given(self):
+        with open(os.path.join(self.accounts_dir, "empty_conf.ini"), 'w') as f:
+            f.write("[DEFAULT]")
+        with self.assertRaises(mbm.config.AccountException):
+            self.config.create_account("empty_conf")
 
     def tearDown(self):
         self.tmp_dir.cleanup()
+        mbm.provider.tumblr.Account = self.real_tumblr_account
