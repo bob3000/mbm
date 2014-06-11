@@ -30,6 +30,12 @@ class TumblrTestCase(unittest.TestCase):
             cfg_parser.write(conf)
         self.account = mbm.provider.tumblr.Account(self.tmp_file, "tumblr")
 
+    def test_model_factory(self):
+        with self.assertRaises(mbm.config.AccountException):
+            self.account.get_model("NonExistingClass")
+        self.assertIs(self.account.get_model("Text"),
+                      mbm.provider.tumblr.Text)
+
     def test_text(self):
         text = mbm.provider.tumblr.Text(
             self.account, "title", "body text", "tag1 tag2")

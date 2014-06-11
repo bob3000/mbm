@@ -15,6 +15,13 @@ class Account(mbm.config.Account):
             self.config['DEFAULT']['username'])
         self.api = mbm.lib.api.Api(oauth, base_url)
 
+    def get_model(self, cls):
+        try:
+            return globals()[cls]
+        except KeyError:
+            raise mbm.config.AccountException(
+                "Data model {} does not exist".format(cls))
+
 
 class Post():
 
