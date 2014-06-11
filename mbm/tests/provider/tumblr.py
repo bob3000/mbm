@@ -28,9 +28,40 @@ class TumblrTestCase(unittest.TestCase):
                               })
         with open(self.tmp_file, 'w') as conf:
             cfg_parser.write(conf)
+        self.account = mbm.provider.tumblr.Account(self.tmp_file, "tumblr")
 
-    def test_account(self):
-        mbm.provider.tumblr.Account(self.tmp_file, "tumblr")
+    def test_text(self):
+        text = mbm.provider.tumblr.Text(
+            self.account, "title", "body text", tags="tag1 tag2")
+        text.post()
+        self.account.api.post.assert_called_with(
+            post_data={'title': 'title', 'body': 'body text',
+                       'type': 'text', 'tags': 'tag1 tag2'})
+
+    def test_photo(self):
+        with self.assertRaises(mbm.provider.tumblr.TumblrException):
+            mbm.provider.tumblr.Photo(self.account, caption="caption",
+                                      link="link", source="source",
+                                      data="data", tags="tags")
+        with self.assertRaises(mbm.provider.tumblr.TumblrException):
+            mbm.provider.tumblr.Photo(self.account, caption="caption",
+                                      link="link", tags="tags")
+        photo = mbm.provider.tumblr.Photo(self.account, caption="caption",
+                                          source="source",  link="link",
+                                          tags="tags")
+        photo.post()
+        self.account.api.post.assert_called_with(
+            post_data={'type': 'photo', 'tags': 'tags',
+                       'source': 'source', 'caption': 'caption',
+                       'link': 'link'})
+        photo = mbm.provider.tumblr.Photo(self.account, caption="caption",
+                                          data="data",  link="link",
+                                          tags="tags")
+        photo.post()
+        self.account.api.post.assert_called_with(
+            post_data={'type': 'photo', 'tags': 'tags',
+                       'data': 'data', 'caption': 'caption',
+                       'link': 'link'})
 
     def tearDown(self):
         self.oauth_patcher.stop()

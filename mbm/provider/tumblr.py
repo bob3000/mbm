@@ -20,24 +20,41 @@ class Post():
 
     def __init__(self, account, post_type, tags):
         self.account = account
-        self.post_type = post_type
-        self.tags = tags
+        self.post_data = {'type': post_type,
+                          'tags': tags,
+                          }
+
+    def update_data(self, data):
+        self.post_data.update(data)
 
     def post(self):
-        raise NotImplementedError
+        self.account.api.post(post_data=self.post_data)
 
 
 class Text(Post):
 
     def __init__(self, account, title, body, tags=""):
         super().__init__(account, "text", tags)
-        self.title = title
-        self.body = body
+        self.update_data({'title': title,
+                          'body': body,
+                          })
 
-    def post(self):
-        post_data = {'type': self.post_type,
-                     'tags': self.tags,
-                     'title': self.title,
-                     'body': self.body,
-                     }
-        self.account.api.post(post_data=post_data)
+
+class Photo(Post):
+
+    def __init__(self, account, caption="",
+                 link="", source="", data="", tags=""):
+        if all((source, data)) or not any((source, data)):
+            raise TumblrException("Either 'source' or 'data' must be present")
+        super().__init__(account, "photo", tags)
+        self.update_data({'caption': caption,
+                          'link': link,
+                          })
+        if source:
+            self.update_data({'source': source})
+        else:
+            self.update_data({'data': data})
+
+
+class TumblrException(Exception):
+    pass
