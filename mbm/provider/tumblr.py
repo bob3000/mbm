@@ -33,7 +33,7 @@ class Post():
 
 class Text(Post):
 
-    def __init__(self, account, title, body, tags=""):
+    def __init__(self, account, title, body, tags):
         super().__init__(account, "text", tags)
         self.update_data({'title': title,
                           'body': body,
@@ -42,8 +42,7 @@ class Text(Post):
 
 class Photo(Post):
 
-    def __init__(self, account, caption="",
-                 link="", source="", data="", tags=""):
+    def __init__(self, account, caption, link, tags, data="", source=""):
         if all((source, data)) or not any((source, data)):
             raise TumblrException("Either 'source' or 'data' must be present")
         super().__init__(account, "photo", tags)

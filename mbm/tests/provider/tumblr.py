@@ -32,7 +32,7 @@ class TumblrTestCase(unittest.TestCase):
 
     def test_text(self):
         text = mbm.provider.tumblr.Text(
-            self.account, "title", "body text", tags="tag1 tag2")
+            self.account, "title", "body text", "tag1 tag2")
         text.post()
         self.account.api.post.assert_called_with(
             post_data={'title': 'title', 'body': 'body text',
@@ -40,23 +40,19 @@ class TumblrTestCase(unittest.TestCase):
 
     def test_photo(self):
         with self.assertRaises(mbm.provider.tumblr.TumblrException):
-            mbm.provider.tumblr.Photo(self.account, caption="caption",
-                                      link="link", source="source",
-                                      data="data", tags="tags")
+            mbm.provider.tumblr.Photo(self.account, "caption", "link", "tags",
+                                      source="source", data="data",)
         with self.assertRaises(mbm.provider.tumblr.TumblrException):
-            mbm.provider.tumblr.Photo(self.account, caption="caption",
-                                      link="link", tags="tags")
-        photo = mbm.provider.tumblr.Photo(self.account, caption="caption",
-                                          source="source",  link="link",
-                                          tags="tags")
+            mbm.provider.tumblr.Photo(self.account, "caption", "link", "tags")
+        photo = mbm.provider.tumblr.Photo(self.account, "caption", "link",
+                                          "tags", source="source")
         photo.post()
         self.account.api.post.assert_called_with(
             post_data={'type': 'photo', 'tags': 'tags',
                        'source': 'source', 'caption': 'caption',
                        'link': 'link'})
-        photo = mbm.provider.tumblr.Photo(self.account, caption="caption",
-                                          data="data",  link="link",
-                                          tags="tags")
+        photo = mbm.provider.tumblr.Photo(self.account, "caption", "link",
+                                          "tags", data="data")
         photo.post()
         self.account.api.post.assert_called_with(
             post_data={'type': 'photo', 'tags': 'tags',
