@@ -18,8 +18,24 @@ class GlobalConfigTestCase(unittest.TestCase):
         self.accounts_dir = os.path.join(self.tmp_dir.name, "accounts")
         os.mkdir(self.accounts_dir)
         self.verify_cfg = configparser.ConfigParser()
-        self.config = mbm.config.Global(self.conf_file,
-                                        self.accounts_dir)
+        self.config = mbm.config.Global(self.conf_file, self.accounts_dir)
+
+    def test_prepare_conf_dirs(self):
+        global_conf_path = os.path.join(self.tmp_dir.name, "c", "my_conf")
+        accounts_path = os.path.join(
+            self.tmp_dir.name, "c", "my_conf", "accounts")
+        mbm.config.prepare_conf_dirs(global_conf_path, accounts_path)
+        mbm.config.prepare_conf_dirs(global_conf_path, accounts_path)
+        self.assertTrue(os.path.exists(global_conf_path))
+        self.assertTrue(os.path.exists(accounts_path))
+        os.rmdir(accounts_path)
+        os.chmod(global_conf_path, 0o444)
+        with self.assertRaises(RuntimeError):
+            mbm.config.prepare_conf_dirs(global_conf_path, accounts_path)
+        os.rmdir(global_conf_path)
+        os.chmod(global_conf_path.rsplit("/", maxsplit=1)[0], 0o444)
+        with self.assertRaises(RuntimeError):
+            mbm.config.prepare_conf_dirs(global_conf_path, accounts_path)
 
     def test_accounts(self):
         self.config.new()
@@ -40,19 +56,6 @@ class GlobalConfigTestCase(unittest.TestCase):
         self.assertDictEqual(self.config.accounts, {})
         with self.assertRaises(mbm.config.AccountException):
             self.config.delete_account("account1")
-
-    def test_modify(self):
-        with self.assertRaises(AttributeError):
-            self.config.new_attribute
-        self.config.new_attribute = "new_value"
-        self.verify_cfg.read(self.conf_file)
-        self.assertDictEqual(dict(self.verify_cfg['DEFAULT']),
-                             dict(self.config.config['DEFAULT']))
-        with self.assertRaises(AttributeError):
-            del self.config.non_existing_attribute
-        del self.config.new_attribute
-        with self.assertRaises(AttributeError):
-            self.config.new_attribute
 
     def test_delete(self):
         self.config.new()

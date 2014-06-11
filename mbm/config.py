@@ -6,12 +6,32 @@ import abc
 import configparser
 import importlib
 import os
+import os.path
 
 import mbm.provider
 
 
 CONSUMER_KEY = ""
 CONSUMER_SECRET = ""
+
+
+def prepare_conf_dirs(global_conf_path, accounts_path):
+    global_conf_path = os.path.abspath(os.path.expanduser(
+        os.path.expandvars(global_conf_path)))
+    accounts_path = os.path.abspath(os.path.expanduser(
+        os.path.expandvars(accounts_path)))
+    if not os.path.exists(global_conf_path):
+        try:
+            os.makedirs(global_conf_path)
+        except OSError:
+            raise RuntimeError(
+                "Could not create directory {}".format(global_conf_path))
+    if not os.path.exists(accounts_path):
+        try:
+            os.makedirs(accounts_path)
+        except OSError:
+            raise RuntimeError(
+                "Could not create directory {}".format(accounts_path))
 
 
 class Config():
