@@ -11,7 +11,8 @@ class GlobalConfigTestCase(unittest.TestCase):
 
     def setUp(self):
         self.real_tumblr_account = mbm.provider.tumblr.Account
-        mbm.provider.tumblr.Account = mbm.config.Account
+        mbm.provider.tumblr.Account = type("Account", (mbm.config.Account,),
+                                           {'get_model': lambda: "model"})
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.conf_file = os.path.join(self.tmp_dir.name, 'test_config.ini')
         self.accounts_dir = os.path.join(self.tmp_dir.name, "accounts")

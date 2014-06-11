@@ -2,6 +2,7 @@
 Contains account configuration and OAuth credentials
 """
 
+import abc
 import configparser
 import importlib
 import os
@@ -87,7 +88,7 @@ def account_factory(conf_file_path, account_type=None):
     return provider.Account(conf_file_path, name)
 
 
-class Account(Config):
+class Account(Config, abc.ABC):
     """
     Account credentials and configurations. Accounts are supposed to be managed
     by an instance of the Global class.
@@ -102,6 +103,10 @@ class Account(Config):
     def __init__(self, file_path, name):
         super().__init__(file_path)
         self.name = name
+
+    @abc.abstractmethod
+    def get_model(self, cls):
+        raise NotImplementedError  # pragma: nocover
 
 
 class AccountException(Exception):
