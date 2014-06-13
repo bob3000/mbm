@@ -1,9 +1,8 @@
 import argparse
 import sys
+import urllib.parse
 import mbm.controller
-
-
-controller = mbm.controller.Controller()
+import mbm.config
 
 
 def parse_args(command_line):
@@ -25,7 +24,7 @@ def parse_args(command_line):
 
     # # text posts
     text_parser = post_type_parser.add_parser("text")
-    text_parser.add_argument("-v", "--verbose", action="count",
+    text_parser.add_argument("-v", "--verbose", action="store_true",
                              help="Verbosity level")
     text_parser.add_argument("-a", "--accounts",
                              help="Coma separated list of accounts to post to")
@@ -37,7 +36,7 @@ def parse_args(command_line):
 
     # # photo posts
     photo_parser = post_type_parser.add_parser("photo")
-    photo_parser.add_argument("-v", "--verbose", action="count",
+    photo_parser.add_argument("-v", "--verbose", action="store_true",
                               help="Verbosity level")
     photo_parser.add_argument("-a", "--accounts",
                               help="Coma separated list of accounts")
@@ -52,20 +51,52 @@ def parse_args(command_line):
     return parser.parse_args(command_line)
 
 
+def account_list(args):
+    try:
+        if "accounts" in args:
+            return controller.global_conf.accounts.filter_accounts(
+                args['accounts'].split(","))
+        else:
+            return list(controller.global_conf.accounts.default_account())
+    except mbm.config.AccountException as e:  # pragma: no cover
+        print(str(e))
+        sys.exit(1)
+
+
 def manage_account(args):
-    pass
+    pass  # pragma: no cover
 
 
 def post_text(args):
-    pass
+    accounts = account_list(args)
+    controller.post_text(accounts, args['title'],
+                         args['body'], tags=args['tags'])
 
 
 def post_photo(args):
-    pass
+    accounts = account_list(args)
+    if urllib.parse.urlparse(args['source'])[0] in ("http", "https"):
+        controller.post_photo(accounts, caption=args['caption'],
+                              link=args['link'], tags=args['tags'],
+                              source=args['source'])
+    else:
+        controller.post_photo(accounts, caption=args['caption'],
+                              link=args['link'], tags=args['tags'],
+                              data=args['source'])
 
 
 def main(argv=None):
+    global controller
     argv = argv if argv else sys.argv[1:]
+    try:
+        mbm.config.prepare_conf_dirs(mbm.config.DEFAULT_GLOBAL_CONF_PATH,
+                                     mbm.config.DEFAULT_ACCOUNTS_PATH)
+    except RuntimeError as e:  # pragma: no cover
+        print(str(e))
+        sys.exit(1)
+    controller = mbm.controller.Controller(
+        mbm.config.DEFAULT_GLOBAL_CONF_PATH,
+        mbm.config.DEFAULT_ACCOUNTS_PATH)
     parse_args(argv)
 
 

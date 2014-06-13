@@ -14,6 +14,9 @@ import mbm.provider
 CONSUMER_KEY = ""
 CONSUMER_SECRET = ""
 
+DEFAULT_GLOBAL_CONF_PATH = "~/.mbm"
+DEFAULT_ACCOUNTS_PATH = "~/.mbm/accounts"
+
 
 def prepare_conf_dirs(global_conf_path, accounts_path):
     global_conf_path = os.path.abspath(os.path.expanduser(
@@ -91,6 +94,23 @@ class Global(Config):
         account = account_factory(config_path)
         account.delete()
         del self.accounts[name]
+
+    def filter_accounts(self, list_of_names):
+        for name in list_of_names:
+            if name not in self.accounts:
+                raise AccountException("Unknown account: {}".format(name))
+        return list(dict(filter(lambda x: x[0] in list_of_names,
+                                self.accounts.items())).values())
+
+    def default_account(self):
+        try:
+            name = self.config['DEFAULT']['default_account']
+        except KeyError:
+            raise AccountException("No default account defined.")
+        account = self.accounts.get(name)
+        if not account:
+            raise AccountException("Default account does not exist")
+        return account
 
 
 def account_factory(conf_file_path, account_type=None):

@@ -69,6 +69,24 @@ class GlobalConfigTestCase(unittest.TestCase):
         with self.assertRaises(mbm.config.AccountException):
             self.config.create_account("empty_conf")
 
+    def test_filter_accounts(self):
+        self.config.accounts = {'accX': 'X', 'accY': 'Y', 'accZ': 'Z'}
+        self.assertListEqual(self.config.filter_accounts(['accX']), ['X'])
+        with self.assertRaises(mbm.config.AccountException):
+            self.config.filter_accounts(['non_existing_account'])
+        self.config.accounts = {}
+
+    def test_default_account(self):
+        self.config.accounts = {'accX': 'X', 'accY': 'Y', 'accZ': 'Z'}
+        self.config.config['DEFAULT']['default_account'] = "accX"
+        self.assertEqual(self.config.default_account(), "X")
+        self.config.accounts = {}
+        with self.assertRaises(mbm.config.AccountException):
+            self.config.default_account()
+        del self.config.config['DEFAULT']['default_account']
+        with self.assertRaises(mbm.config.AccountException):
+            self.config.default_account()
+
     def tearDown(self):
         self.tmp_dir.cleanup()
         mbm.provider.tumblr.Account = self.real_tumblr_account
