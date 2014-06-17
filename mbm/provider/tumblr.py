@@ -1,6 +1,7 @@
 import mbm.config
 import mbm.lib.api
 import mbm.lib.oauth
+import mbm.datatype
 
 
 class Account(mbm.config.Account):
@@ -16,6 +17,10 @@ class Account(mbm.config.Account):
         self.api = mbm.lib.api.Api(oauth, base_url)
 
     def get_model(self, cls):
+        """
+        Returns one of the data model classes in this module which fit to this
+        account type.
+        """
         try:
             return globals()[cls]
         except KeyError:
@@ -23,7 +28,7 @@ class Account(mbm.config.Account):
                 "Data model {} does not exist".format(cls))
 
 
-class Post():
+class Post(mbm.datatype.Post):
 
     def __init__(self, account, post_type, tags):
         self.account = account
@@ -31,11 +36,12 @@ class Post():
                           'tags': tags,
                           }
 
-    def update_data(self, data):
-        self.post_data.update(data)
-
     def post(self):
-        self.account.api.post(post_data=self.post_data)
+        res = self.account.api.post(post_data=self.post_data)
+        if res.getcode() != 200:
+            raise TumblrException(
+                "Tumblr API responded with code {}: {}".format(
+                    res.getcode(), res.read()))
 
 
 class Text(Post):
@@ -62,5 +68,5 @@ class Photo(Post):
             self.update_data({'data': data})
 
 
-class TumblrException(Exception):
+class TumblrException(mbm.datatype.ProviderException):
     pass

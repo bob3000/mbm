@@ -59,21 +59,20 @@ class Api():
         headers = {k.lower(): v.lower() for k, v in res.getheaders()}
         if ("content-type" not in headers or
                 'application/json' not in headers['content-type']):
-            raise ApiException(reason="content-type is not application/json")
+            raise ApiException("content-type is not application/json")
         try:
             data = json.loads(res.read())
         except (TypeError, ValueError):
-            raise ApiException(reason="payload is not valid json")
-        return ApiResponse(data)
+            raise ApiException("payload is not valid json")
+        return ApiResponse(data, res.getcode())
 
 
 class ApiResponse():
 
-    def __init__(self, data):
-        self.__dict__.update(data)
+    def __init__(self, payload, code):
+        self.payload = payload
+        self.code = code
 
 
 class ApiException(Exception):
-
-    def __init__(self, reason=""):
-        self.reason = reason
+    pass

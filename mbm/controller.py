@@ -1,4 +1,5 @@
 import mbm.config
+import mbm.datatype
 
 
 class Controller():
@@ -8,12 +9,18 @@ class Controller():
 
     def post_text(self, accounts, title, body, tags=""):
         for account in accounts:
-            text = account.get_model("Text")(title, body, tags)
-            text.post()
+            try:
+                text = account.get_model("Text")(title, body, tags)
+                text.post()
+            except mbm.datatype.ProviderException as e:
+                raise RuntimeError(e)
 
     def post_photo(self, accounts, caption="",
                    link="", tags="", data="", source=""):
         for account in accounts:
-            photo = account.get_model("Photo")(
-                caption, link, tags, data, source)
-            photo.post()
+            try:
+                photo = account.get_model("Photo")(
+                    caption, link, tags, data, source)
+                photo.post()
+            except mbm.datatype.ProviderException as e:
+                raise RuntimeError(e)

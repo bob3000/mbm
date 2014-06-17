@@ -3,20 +3,18 @@ import configparser
 import os.path
 import tempfile
 import mbm.provider.tumblr
-import mbm.lib.oauth
 import mbm.lib.api
 import mbm.config
 
-from unittest.mock import patch
+from unittest.mock import MagicMock
 
 
 class TumblrTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.oauth_patcher = patch('mbm.lib.oauth.OAuth')
-        self.api_patcher = patch('mbm.lib.api.Api')
-        self.oauth_patcher.start()
-        self.api_patcher.start()
+        self.real_api = mbm.lib.api.Api
+        mbm.lib.api.Api = MagicMock()
+
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.tmp_file = os.path.join(self.tmp_dir.name, "tumblr.ini")
         cfg_parser = configparser.ConfigParser()
@@ -28,13 +26,17 @@ class TumblrTestCase(unittest.TestCase):
                               })
         with open(self.tmp_file, 'w') as conf:
             cfg_parser.write(conf)
-        self.account = mbm.provider.tumblr.Account(self.tmp_file, "tumblr")
 
-    def test_model_factory(self):
-        with self.assertRaises(mbm.config.AccountException):
-            self.account.get_model("NonExistingClass")
-        self.assertIs(self.account.get_model("Text"),
-                      mbm.provider.tumblr.Text)
+        attrs_success = {'getcode.return_value': 200,
+                         'read.return_value': '\{"body": "todo bien"\}'}
+        attrs_error = {'code.return_value': 404,
+                       'read.return_value': '\{"error": "todo mal"\}'}
+        self.api_response = MagicMock()
+        self.api_response.configure_mock(**attrs_success)
+        self.error_api_response = MagicMock()
+        self.error_api_response.configure_mock(**attrs_error)
+        self.account = mbm.provider.tumblr.Account(self.tmp_file, "tumblr")
+        self.account.api.post = MagicMock(return_value=self.api_response)
 
     def test_text(self):
         text = mbm.provider.tumblr.Text(
@@ -43,6 +45,16 @@ class TumblrTestCase(unittest.TestCase):
         self.account.api.post.assert_called_with(
             post_data={'title': 'title', 'body': 'body text',
                        'type': 'text', 'tags': 'tag1 tag2'})
+        self.account.api.post = MagicMock(return_value=self.error_api_response)
+        with self.assertRaises(mbm.provider.tumblr.TumblrException):
+            text.post()
+        self.account.api.post = MagicMock(return_value=self.api_response)
+
+    def test_model_factory(self):
+        with self.assertRaises(mbm.config.AccountException):
+            self.account.get_model("NonExistingClass")
+        self.assertIs(self.account.get_model("Text"),
+                      mbm.provider.tumblr.Text)
 
     def test_photo(self):
         with self.assertRaises(mbm.provider.tumblr.TumblrException):
@@ -64,8 +76,11 @@ class TumblrTestCase(unittest.TestCase):
             post_data={'type': 'photo', 'tags': 'tags',
                        'data': 'data', 'caption': 'caption',
                        'link': 'link'})
+        self.account.api.post = MagicMock(return_value=self.error_api_response)
+        with self.assertRaises(mbm.provider.tumblr.TumblrException):
+            photo.post()
+        self.account.api.post = MagicMock(return_value=self.api_response)
 
     def tearDown(self):
-        self.oauth_patcher.stop()
-        self.api_patcher.stop()
+        mbm.lib.api.Api = self.real_api
         self.tmp_dir.cleanup()

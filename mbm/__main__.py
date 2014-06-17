@@ -69,20 +69,27 @@ def manage_account(args):
 
 def post_text(args):
     accounts = account_list(args)
-    controller.post_text(accounts, args['title'],
-                         args['body'], tags=args['tags'])
+    try:
+        controller.post_text(accounts, args['title'],
+                            args['body'], tags=args['tags'])
+    except RuntimeError as e:
+        print("Could not post: {}".format(e), file=sys.stderr)
+        sys.exit(1)
 
 
 def post_photo(args):
     accounts = account_list(args)
     if urllib.parse.urlparse(args['source'])[0] in ("http", "https"):
-        controller.post_photo(accounts, caption=args['caption'],
-                              link=args['link'], tags=args['tags'],
-                              source=args['source'])
+        kwargs = dict(caption=args['caption'], link=args['link'],
+                      tags=args['tags'], source=args['source'])
     else:
-        controller.post_photo(accounts, caption=args['caption'],
-                              link=args['link'], tags=args['tags'],
-                              data=args['source'])
+        kwargs = dict(caption=args['caption'], link=args['link'],
+                      tags=args['tags'], data=args['source'])
+    try:
+        controller.post_photo(accounts, **kwargs)
+    except RuntimeError as e:
+        print("Could not post: {}".format(e), file=sys.stderr)
+        sys.exit(1)
 
 
 def main(argv=None):
