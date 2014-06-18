@@ -58,8 +58,8 @@ def account_list(args):
                 args['accounts'].split(","))
         else:
             return list(controller.global_conf.accounts.default_account())
-    except mbm.config.AccountException as e:  # pragma: no cover
-        print(str(e))
+    except mbm.config.AccountException as e:
+        print(str(e), file=sys.stderr)
         sys.exit(1)
 
 
@@ -98,8 +98,8 @@ def main(argv=None):
     try:
         mbm.config.prepare_conf_dirs(mbm.config.DEFAULT_GLOBAL_CONF_PATH,
                                      mbm.config.DEFAULT_ACCOUNTS_PATH)
-    except RuntimeError as e:  # pragma: no cover
-        print(str(e))
+    except RuntimeError as e:
+        print(str(e), file=sys.stderr)
         sys.exit(1)
     controller = mbm.controller.Controller(
         mbm.config.DEFAULT_GLOBAL_CONF_PATH,
