@@ -1,4 +1,6 @@
 import argparse
+import os
+import subprocess
 import sys
 import urllib.parse
 import mbm.controller
@@ -55,7 +57,7 @@ def account_list(args):
     try:
         if "accounts" in args:
             return controller.global_conf.accounts.filter_accounts(
-                args['accounts'].split(","))
+                args.accounts.split(","))
         else:
             return list(controller.global_conf.accounts.default_account())
     except mbm.config.AccountException as e:
@@ -64,14 +66,42 @@ def account_list(args):
 
 
 def manage_account(args):
-    pass  # pragma: no cover
+    if args.action in ('new', 'edit', 'delete') and not args.name:
+        print("{} account: error: the following arguments are required: "
+              "name".format(sys.argv[0]), file=sys.stderr)
+        sys.exit(2)
+    try:
+        if args.action == "list":
+            for account_name in controller.global_conf.accounts:
+                print(account_name)
+        elif args.action == "new":
+            controller.global_conf.create_account(args.name)
+        elif args.action == "delete":
+            controller.global_conf.delete_account(args.name)
+        elif args.action == "edit":
+            account = controller.global_conf.filter_accounts(
+                [args.name])[0]
+            editor = os.environ.get("EDITOR") or 'vi'
+            try:
+                subprocess.check_call([editor, account.file_path])
+            except FileNotFoundError:
+                print("Error: $EDITOR not set. Export variable and try again",
+                      file=sys.stderr)
+                sys.exit(1)
+            except subprocess.CalledProcessError as e:
+                print("Error: the editor returned {}".format(e.returncode),
+                      file=sys.stderr)
+                sys.exit(1)
+    except mbm.config.AccountException as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(2)
 
 
 def post_text(args):
     accounts = account_list(args)
     try:
-        controller.post_text(accounts, args['title'],
-                            args['body'], tags=args['tags'])
+        controller.post_text(accounts, args.title,
+                            args.body, tags=args.tags)
     except RuntimeError as e:
         print("Could not post: {}".format(e), file=sys.stderr)
         sys.exit(1)
@@ -79,12 +109,12 @@ def post_text(args):
 
 def post_photo(args):
     accounts = account_list(args)
-    if urllib.parse.urlparse(args['source'])[0] in ("http", "https"):
-        kwargs = dict(caption=args['caption'], link=args['link'],
-                      tags=args['tags'], source=args['source'])
+    if urllib.parse.urlparse(args.source)[0] in ("http", "https"):
+        kwargs = dict(caption=args.caption, link=args.link,
+                      tags=args.tags, source=args.source)
     else:
-        kwargs = dict(caption=args['caption'], link=args['link'],
-                      tags=args['tags'], data=args['source'])
+        kwargs = dict(caption=args.caption, link=args.link,
+                      tags=args.tags, data=args.source)
     try:
         controller.post_photo(accounts, **kwargs)
     except RuntimeError as e:
@@ -104,7 +134,9 @@ def main(argv=None):
     controller = mbm.controller.Controller(
         mbm.config.DEFAULT_GLOBAL_CONF_PATH,
         mbm.config.DEFAULT_ACCOUNTS_PATH)
-    parse_args(argv)
+    args = parse_args(argv)
+    if 'func' in args:
+        args.func(args)
 
 
 if __name__ == "__main__":  # pragma: no cover

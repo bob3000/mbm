@@ -1,12 +1,19 @@
 import unittest
+import argparse
 import sys
 import shlex
+import subprocess
 import mbm.config
 import mbm.controller
 import mbm.__main__
 
 from unittest.mock import MagicMock, call, patch
 
+
+def namespace(contents):
+    n = argparse.Namespace()
+    n.__dict__.update(contents)
+    return n
 
 class MainTestCase(unittest.TestCase):
 
@@ -22,10 +29,10 @@ class MainTestCase(unittest.TestCase):
         sys.stderr = MagicMock()
 
     def test_args_manage_account(self):
-        account = shlex.split("account list myaccunt")
+        account = shlex.split("account list myaccount")
         result = mbm.__main__.parse_args(account)
         result = filter(lambda x: x[0] != 'func', result.__dict__.items())
-        self.assertDictEqual(dict(result), {'name': 'myaccunt',
+        self.assertDictEqual(dict(result), {'name': 'myaccount',
                                             'action': 'list'})
 
     def test_args_post_text(self):
@@ -49,25 +56,73 @@ class MainTestCase(unittest.TestCase):
                                             'caption': 'caption',
                                             'tags': 'tag,tag2'})
 
+    @patch('mbm.__main__.controller.global_conf.create_account')
+    @patch('mbm.__main__.controller.global_conf.delete_account')
+    @patch('mbm.__main__.controller.global_conf.filter_accounts')
+    @patch('subprocess.check_call')
+    @patch('sys.stdout')
+    def test_manage_account(self, stdout, check_call, filter, delete, create):
+        mbm.__main__.manage_account(namespace({'action': 'new',
+                                               'name': None}))
+        sys.exit.assert_called_with(2)
+        mbm.__main__.manage_account(namespace({'action': 'new',
+                                               'name': 'acc1'}))
+        create.assert_called_with("acc1")
+
+        mbm.__main__.controller.global_conf.accounts = {'acc1': 'fake'}
+        mbm.__main__.manage_account(namespace({'action': 'list',
+                                               'name': None}))
+        stdout.assert_has_calls([call.write('acc1'), call.write('\n')])
+
+        mbm.__main__.manage_account(namespace({'action': 'edit',
+                                               'name': 'acc1'}))
+        filter.assert_called_with(['acc1'])
+        check_call.assert_called
+        check_call.side_effect = FileNotFoundError
+        mbm.__main__.manage_account(namespace({'action': 'edit',
+                                               'name': 'acc1'}))
+        sys.exit.assert_called_with(1)
+        sys.exit.reset_mock()
+        check_call.side_effect = subprocess.CalledProcessError(
+            cmd='edit', returncode=1)
+        mbm.__main__.manage_account(namespace({'action': 'edit',
+                                               'name': 'acc1'}))
+        sys.exit.assert_called_with(1)
+        sys.exit.reset_mock()
+        check_call.side_effect = None
+
+        mbm.__main__.manage_account(namespace({'action': 'delete',
+                                               'name': 'acc1'}))
+        delete.assert_called_with('acc1')
+        create.side_effect = mbm.config.AccountException
+        mbm.__main__.manage_account(namespace({'action': 'new',
+                                               'name': 'acc1'}))
+        sys.exit.assert_called_with(2)
+        sys.exit.reset_mock()
+
     def test_post_text(self):
-        mbm.__main__.post_text({'accounts': 'acc1,acc2', 'title': 'title',
-                                'body': 'body', 'tags': 'tag1,tag2'})
+        mbm.__main__.post_text(namespace({'accounts': 'acc1,acc2',
+                                          'title': 'title', 'body': 'body',
+                                          'tags': 'tag1,tag2'}))
         mbm.__main__.controller.post_text.assert_has_calls(
             [call.post_text([], 'title', 'body', tags='tag1,tag2')])
         with patch('mbm.__main__.controller.post_text',
                    side_effect=RuntimeError):
-            mbm.__main__.post_text({'accounts': 'acc1,acc2', 'title': 'title',
-                                    'body': 'body', 'tags': 'tag1,tag2'})
+            mbm.__main__.post_text(namespace({'accounts': 'acc1,acc2',
+                                              'title': 'title', 'body': 'body',
+                                              'tags': 'tag1,tag2'}))
             sys.exit.assert_called_with(1)
         mbm.__main__.controller.mock_reset()
 
     def test_post_photo(self):
-        mbm.__main__.post_photo({'accounts': 'acc1,acc2', 'caption': 'caption',
-                                 'link': 'link', 'tags': 'tag1,tag2',
-                                 'source': 'data'})
-        mbm.__main__.post_photo({'accounts': 'acc1,acc2', 'caption': 'caption',
-                                 'link': 'link', 'tags': 'tag1,tag2',
-                                 'source': 'http://data'})
+        mbm.__main__.post_photo(namespace({'accounts': 'acc1,acc2',
+                                           'caption': 'caption',
+                                           'link': 'link', 'tags': 'tag1,tag2',
+                                           'source': 'data'}))
+        mbm.__main__.post_photo(namespace({'accounts': 'acc1,acc2',
+                                           'caption': 'caption',
+                                           'link': 'link', 'tags': 'tag1,tag2',
+                                           'source': 'http://data'}))
         mbm.__main__.controller.post_photo.assert_has_calls(
             [call.post_photo([], caption='caption', link='link',
                              tags='tag1,tag2', data='data'),
@@ -75,14 +130,16 @@ class MainTestCase(unittest.TestCase):
                              source='http://data', tags='tag1,tag2')])
         with patch('mbm.__main__.controller.post_photo',
                    side_effect=RuntimeError):
-            mbm.__main__.post_photo({'accounts': 'acc1,acc2',
-                                     'caption': 'caption', 'link': 'link',
-                                     'tags': 'tag1,tag2', 'source': 'data'})
+            mbm.__main__.post_photo(namespace({'accounts': 'acc1,acc2',
+                                               'caption': 'caption',
+                                               'link': 'link',
+                                               'tags': 'tag1,tag2',
+                                               'source': 'data'}))
             sys.exit.assert_called_with(1)
         mbm.__main__.controller.mock_reset()
 
     def test_account_list(self):
-        mbm.__main__.account_list({'accounts': 'acc1,acc2'})
+        mbm.__main__.account_list(namespace({'accounts': 'acc1,acc2'}))
         mbm.__main__.account_list({})
         mbm.__main__.controller.assert_has_calls(
             [call.global_conf.accounts.filter_accounts(['acc1', 'acc2']),
@@ -95,8 +152,8 @@ class MainTestCase(unittest.TestCase):
         mbm.__main__.controller.mock_reset()
 
     @patch('mbm.__main__.parse_args')
-    def test_main(self, mock_class):
-        mbm.__main__.parse_args = mock_class
+    def test_main(self, parse_args):
+        parse_args.return_value = namespace({'func': lambda x: x})
         mbm.__main__.main()
         mbm.controller.assert_has_calls(
             [call.Controller('~/.mbm', '~/.mbm/accounts')])

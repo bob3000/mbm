@@ -17,12 +17,12 @@ CONSUMER_SECRET = ""
 DEFAULT_GLOBAL_CONF_PATH = "~/.mbm"
 DEFAULT_ACCOUNTS_PATH = "~/.mbm/accounts"
 
+def expand_dir(dir):
+    return os.path.abspath(os.path.expanduser(os.path.expandvars(dir)))
 
 def prepare_conf_dirs(global_conf_path, accounts_path):
-    global_conf_path = os.path.abspath(os.path.expanduser(
-        os.path.expandvars(global_conf_path)))
-    accounts_path = os.path.abspath(os.path.expanduser(
-        os.path.expandvars(accounts_path)))
+    global_conf_path = expand_dir(global_conf_path)
+    accounts_path = expand_dir(accounts_path)
     if not os.path.exists(global_conf_path):
         try:
             os.makedirs(global_conf_path)
@@ -73,10 +73,10 @@ class Global(Config):
 
     def __init__(self, file_path, accounts_path):
         super().__init__(file_path)
-        self.file_path = file_path
-        self.accounts_path = accounts_path
+        self.file_path = expand_dir(file_path)
+        self.accounts_path = expand_dir(accounts_path)
         self.accounts = {i.split("/")[-1][:-4]: account_factory(i) for i in
-                         os.listdir(accounts_path) if i.endswith(".ini")}
+                         os.listdir(self.accounts_path) if i.endswith(".ini")}
 
     def create_account(self, name, account_type=None):
         if name in self.accounts:
