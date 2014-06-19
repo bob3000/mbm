@@ -72,7 +72,8 @@ class Global(Config):
     >>> cfg.accounts['my_account'].token
     """
 
-    DEFAULT_CONFIG = {}
+    DEFAULT_CONFIG = {'default_account': '',
+                      }
 
     def __init__(self, file_path, accounts_path):
         super().__init__(file_path)
@@ -114,8 +115,9 @@ class Global(Config):
     def default_account(self):
         try:
             name = self.config['DEFAULT']['default_account']
+            if not name: raise KeyError
         except KeyError:
-            raise AccountException("No default account defined.")
+            raise AccountException("No default account defined")
         account = self.accounts.get(name)
         if not account:
             raise AccountException("Default account does not exist")

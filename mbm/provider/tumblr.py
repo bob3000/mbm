@@ -38,10 +38,10 @@ class Post(mbm.datatype.Post):
 
     def post(self):
         res = self.account.api.post(post_data=self.post_data)
-        if res.getcode() != 200:
+        if res.code != 200:
             raise TumblrException(
                 "Tumblr API responded with code {}: {}".format(
-                    res.getcode(), res.read()))
+                    res.code, res.read()))
 
 
 class Text(Post):

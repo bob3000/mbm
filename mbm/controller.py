@@ -7,10 +7,10 @@ class Controller():
     def __init__(self, global_conf_path, accounts_path):
         self.global_conf = mbm.config.Global(global_conf_path, accounts_path)
 
-    def post_text(self, accounts, title, body, tags=""):
+    def post_text(self, accounts, title, body, tags):
         for account in accounts:
             try:
-                text = account.get_model("Text")(title, body, tags)
+                text = account.get_model("Text")(account, title, body, tags)
                 text.post()
             except mbm.datatype.ProviderException as e:
                 raise RuntimeError(e)

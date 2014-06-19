@@ -68,10 +68,19 @@ The `account edit` command would normally open an editor
     >>> sh("mbm account delete newaccount")
     >>> sh("mbm account delete newaccount")
     Error: Unknown account newaccount
+    >>> sh("mbm account list")
 
 ## posting tests
 
+The `post` subcommand allows to post different types of data. In the following
+we are going to show the behavior of every single post type.
+
 ### text posting
+
+    >>> sh("mbm post text 'a title' 'a text body'")
+    Error: No default account defined
+    >>> sh("mbm account new myaccount")
+    >>> sh("mbm  post text --account=myaccount 'a title' 'a text body'")
 
 ### picture posting
 

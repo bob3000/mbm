@@ -30,7 +30,7 @@ def parse_args(command_line):
                              help="Verbosity level")
     text_parser.add_argument("-a", "--accounts",
                              help="Coma separated list of accounts to post to")
-    text_parser.add_argument("-t", "--tags",
+    text_parser.add_argument("-t", "--tags", default="",
                              help="Coma separated list of tags")
     text_parser.add_argument("title", help="Title of post")
     text_parser.add_argument("body", help="Body of post")
@@ -42,7 +42,7 @@ def parse_args(command_line):
                               help="Verbosity level")
     photo_parser.add_argument("-a", "--accounts",
                               help="Coma separated list of accounts")
-    photo_parser.add_argument("-t", "--tags",
+    photo_parser.add_argument("-t", "--tags", default="",
                               help="Coma separated list of tags")
     photo_parser.add_argument("-c", "--caption", help="Photo caption")
     photo_parser.add_argument("-l", "--link", help="Adds a link to the photo")
@@ -55,13 +55,13 @@ def parse_args(command_line):
 
 def account_list(args):
     try:
-        if "accounts" in args:
-            return controller.global_conf.accounts.filter_accounts(
+        if args.accounts:
+            return controller.global_conf.filter_accounts(
                 args.accounts.split(","))
         else:
-            return list(controller.global_conf.accounts.default_account())
+            return list(controller.global_conf.default_account())
     except mbm.config.AccountException as e:
-        print(str(e), file=sys.stderr)
+        print("Error:", str(e), file=sys.stderr)
         sys.exit(1)
 
 
@@ -101,7 +101,7 @@ def post_text(args):
     accounts = account_list(args)
     try:
         controller.post_text(accounts, args.title,
-                            args.body, tags=args.tags)
+                            args.body, args.tags)
     except RuntimeError as e:
         print("Could not post: {}".format(e), file=sys.stderr)
         sys.exit(1)

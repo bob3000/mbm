@@ -22,7 +22,7 @@ class MainTestCase(unittest.TestCase):
         self.real_controller = mbm.controller
         mbm.controller = MagicMock()
         mbm.__main__.controller = MagicMock()
-        attrs = {'global_conf.accounts.filter_accounts.return_value': []}
+        attrs = {'global_conf.filter_accounts.return_value': []}
         mbm.__main__.controller.configure_mock(**attrs)
         self.real_exit = sys.exit
         sys.exit = MagicMock()
@@ -106,7 +106,7 @@ class MainTestCase(unittest.TestCase):
                                           'title': 'title', 'body': 'body',
                                           'tags': 'tag1,tag2'}))
         mbm.__main__.controller.post_text.assert_has_calls(
-            [call.post_text([], 'title', 'body', tags='tag1,tag2')])
+            [call.post_text([], 'title', 'body', 'tag1,tag2')])
         with patch('mbm.__main__.controller.post_text',
                    side_effect=RuntimeError):
             mbm.__main__.post_text(namespace({'accounts': 'acc1,acc2',
@@ -141,14 +141,14 @@ class MainTestCase(unittest.TestCase):
 
     def test_account_list(self):
         mbm.__main__.account_list(namespace({'accounts': 'acc1,acc2'}))
-        mbm.__main__.account_list({})
+        mbm.__main__.account_list(namespace({'accounts': None}))
         mbm.__main__.controller.assert_has_calls(
-            [call.global_conf.accounts.filter_accounts(['acc1', 'acc2']),
-             call.global_conf.accounts.default_account()])
+            [call.global_conf.filter_accounts(['acc1', 'acc2']),
+             call.global_conf.default_account()])
         with patch(
-            "mbm.__main__.controller.global_conf.accounts.default_account",
+            "mbm.__main__.controller.global_conf.default_account",
                 side_effect=mbm.config.AccountException):
-            mbm.__main__.account_list({})
+            mbm.__main__.account_list(namespace({'accounts': None}))
             sys.exit.assert_called_with(1)
         mbm.__main__.controller.mock_reset()
 
