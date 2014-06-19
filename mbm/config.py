@@ -47,7 +47,6 @@ class Config():
             if not self.config.has_option("DEFAULT", k):
                 self.config.set("DEFAULT", k, v)
 
-
     def delete(self):
         self.config['DEFAULT'] = {}
         os.remove(self.file_path)
@@ -79,14 +78,18 @@ class Global(Config):
         super().__init__(file_path)
         self.file_path = expand_dir(file_path)
         self.accounts_path = expand_dir(accounts_path)
-        self.accounts = {i.split("/")[-1][:-4]: account_factory(i) for i in
-                         os.listdir(self.accounts_path) if i.endswith(".ini")}
+        # keys: account name = filename without extension
+        # values: Account objects made by the account factory method
+        self.accounts = {i.split("/")[-1][:-4]: account_factory(
+            os.path.join(self.accounts_path, i))
+            for i in os.listdir(self.accounts_path) if i.endswith(".ini")}
 
 # TODO: The default for account_type has to be changed to None as soon as
 # other types exist
     def create_account(self, name, account_type='tumblr'):
         if name in self.accounts:
-            raise AccountException("Account {} already exists".format(name))
+            raise AccountException("Account {} already "
+                                   "exists".format(name))
         config_path = os.path.join(self.accounts_path, name + ".ini")
         account = account_factory(config_path, account_type)
         account.new()
@@ -95,7 +98,7 @@ class Global(Config):
 
     def delete_account(self, name):
         if name not in self.accounts:
-            raise AccountException("Unknown account: {}".format(name))
+            raise AccountException("Unknown account {}".format(name))
         config_path = os.path.join(self.accounts_path, name + ".ini")
         account = account_factory(config_path)
         account.delete()
@@ -104,7 +107,7 @@ class Global(Config):
     def filter_accounts(self, list_of_names):
         for name in list_of_names:
             if name not in self.accounts:
-                raise AccountException("Unknown account: {}".format(name))
+                raise AccountException("Unknown account {}".format(name))
         return list(dict(filter(lambda x: x[0] in list_of_names,
                                 self.accounts.items())).values())
 

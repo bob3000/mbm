@@ -55,6 +55,19 @@ The following tests illustrate the behavior of the `account` subcommand.
 
     >>> sh("mbm account list")
     >>> sh("mbm account new newaccount")
+    >>> sh("mbm account list")
+    newaccount
+    >>> sh("mbm account new newaccount")
+    Error: Account newaccount already exists
+    >>> sh("mbm account edit non_existing_account")
+    Error: Unknown account non_existing_account
+
+The `account edit` command would normally open an editor
+
+    >>> sh("mbm account edit newaccount")
+    >>> sh("mbm account delete newaccount")
+    >>> sh("mbm account delete newaccount")
+    Error: Unknown account newaccount
 
 ## posting tests
 

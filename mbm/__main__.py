@@ -93,7 +93,7 @@ def manage_account(args):
                       file=sys.stderr)
                 sys.exit(1)
     except mbm.config.AccountException as e:
-        print(str(e), file=sys.stderr)
+        print("Error:", str(e), file=sys.stderr)
         sys.exit(2)
 
 
