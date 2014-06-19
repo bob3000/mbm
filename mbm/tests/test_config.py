@@ -67,7 +67,7 @@ class GlobalConfigTestCase(unittest.TestCase):
         with open(os.path.join(self.accounts_dir, "empty_conf.ini"), 'w') as f:
             f.write("[DEFAULT]")
         with self.assertRaises(mbm.config.AccountException):
-            self.config.create_account("empty_conf")
+            self.config.create_account("empty_conf", account_type=None)
 
     def test_filter_accounts(self):
         self.config.accounts = {'accX': 'X', 'accY': 'Y', 'accZ': 'Z'}

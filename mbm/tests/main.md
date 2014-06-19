@@ -35,20 +35,26 @@ test run and clean it up properly. To get there we overwrite the defaults in
 the `mbm.config` module.
 
     >>> import os
+    >>> import shutil
     >>> import mbm.config
     >>> mbm.config.DEFAULT_GLOBAL_CONF_PATH = os.path.join(
     ...     os.getcwd(), "test_config")
     >>> mbm.config.DEFAULT_ACCOUNTS_PATH = os.path.join(
     ...     os.getcwd(), "test_config", "accounts")
+    >>> shutil.rmtree(mbm.config.DEFAULT_GLOBAL_CONF_PATH, ignore_errors=True)
 
 All the following integration test will pass the entire program logic without
 involving calls to a shell for velocity reasons. Instead the input normally
 is directly injected into the `main` method. The `sh` method used here
 contains a little magic which can be found in the test packages `__init__.py`.
+The given string corresponds exactly to the regular command line.
 
 ## account administration tests
 
-    >>> #sh("mbm account list")
+The following tests illustrate the behavior of the `account` subcommand.
+
+    >>> sh("mbm account list")
+    >>> sh("mbm account new newaccount")
 
 ## posting tests
 

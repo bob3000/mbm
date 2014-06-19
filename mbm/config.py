@@ -43,6 +43,10 @@ class Config():
         self.file_path = file_path
         self.config = configparser.ConfigParser()
         self.config.read(file_path)
+        for k,v in self.DEFAULT_CONFIG.items():
+            if not self.config.has_option("DEFAULT", k):
+                self.config.set("DEFAULT", k, v)
+
 
     def delete(self):
         self.config['DEFAULT'] = {}
@@ -78,7 +82,9 @@ class Global(Config):
         self.accounts = {i.split("/")[-1][:-4]: account_factory(i) for i in
                          os.listdir(self.accounts_path) if i.endswith(".ini")}
 
-    def create_account(self, name, account_type=None):
+# TODO: The default for account_type has to be changed to None as soon as
+# other types exist
+    def create_account(self, name, account_type='tumblr'):
         if name in self.accounts:
             raise AccountException("Account {} already exists".format(name))
         config_path = os.path.join(self.accounts_path, name + ".ini")
