@@ -17,5 +17,6 @@ pep8:
 clean:
 	rm -rf mbm.egg-info mbm/__pycache__/
 	rm -rf .coverage htmlcov/
+	rm -rf test_config
 	find . -name '*.pyc' -delete
 	find . -name '__pycache__' -delete

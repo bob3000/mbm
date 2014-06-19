@@ -1,5 +1,6 @@
 import unittest
 import argparse
+import os
 import sys
 import shlex
 import subprocess
@@ -153,10 +154,15 @@ class MainTestCase(unittest.TestCase):
 
     @patch('mbm.__main__.parse_args')
     def test_main(self, parse_args):
+        mbm.config.DEFAULT_GLOBAL_CONF_PATH = os.path.join(
+            os.getcwd(), "test_config")
+        mbm.config.DEFAULT_ACCOUNTS_PATH = os.path.join(
+            os.getcwd(), "test_config", "accounts")
         parse_args.return_value = namespace({'func': lambda x: x})
         mbm.__main__.main()
         mbm.controller.assert_has_calls(
-            [call.Controller('~/.mbm', '~/.mbm/accounts')])
+            [call.Controller('/home/vagrant/mbm/test_config',
+                             '/home/vagrant/mbm/test_config/accounts')])
         with patch("mbm.config.prepare_conf_dirs", side_effect=RuntimeError):
             mbm.__main__.main()
             sys.exit.assert_called_with(1)

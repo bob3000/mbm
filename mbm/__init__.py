@@ -6,14 +6,15 @@ import pkg_resources
 
 def load_tests(loader, tests, pattern):
     import os.path
+    import shlex
     from mbm.__main__ import main as _main
 
-    def main(*a):
+    def sh(a):
         try:
             import sys
             stdout, stderr = sys.stdout, sys.stderr
             sys.stdout, sys.stderr = io.StringIO(), io.StringIO()
-            _main(list(a))
+            _main(shlex.split(a)[1:])
         except SystemExit:  # pragma: no cover
             pass
         finally:
@@ -33,7 +34,6 @@ def load_tests(loader, tests, pattern):
             fn, module_relative=False, globs=globs,
             optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
 
-    loader.discover(start_dir="{}/tests".format(pwd))
     return tests
 
 
