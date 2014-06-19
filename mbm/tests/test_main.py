@@ -160,9 +160,7 @@ class MainTestCase(unittest.TestCase):
             os.getcwd(), "test_config", "accounts")
         parse_args.return_value = namespace({'func': lambda x: x})
         mbm.__main__.main()
-        mbm.controller.assert_has_calls(
-            [call.Controller('/home/vagrant/mbm/test_config',
-                             '/home/vagrant/mbm/test_config/accounts')])
+        self.assertTrue(mbm.controller.Controller.called)
         with patch("mbm.config.prepare_conf_dirs", side_effect=RuntimeError):
             mbm.__main__.main()
             sys.exit.assert_called_with(1)
