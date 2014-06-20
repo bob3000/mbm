@@ -48,11 +48,11 @@ class MainTestCase(unittest.TestCase):
 
     def test_args_post_photo(self):
         photo = shlex.split("post photo --accounts=acc,acc2 --tags=tag,tag2"
-                            " --caption=caption --link=link source")
+                            " --caption=caption --link=link img_source")
         result = mbm.__main__.parse_args(photo)
         result = filter(lambda x: x[0] != 'func', result.__dict__.items())
         self.assertDictEqual(dict(result), {'verbose': False, 'link': 'link',
-                                            'source': 'source',
+                                            'img_source': 'img_source',
                                             'accounts': 'acc,acc2',
                                             'caption': 'caption',
                                             'tags': 'tag,tag2'})
@@ -119,11 +119,11 @@ class MainTestCase(unittest.TestCase):
         mbm.__main__.post_photo(namespace({'accounts': 'acc1,acc2',
                                            'caption': 'caption',
                                            'link': 'link', 'tags': 'tag1,tag2',
-                                           'source': 'data'}))
+                                           'img_source': 'data'}))
         mbm.__main__.post_photo(namespace({'accounts': 'acc1,acc2',
                                            'caption': 'caption',
                                            'link': 'link', 'tags': 'tag1,tag2',
-                                           'source': 'http://data'}))
+                                           'img_source': 'http://data'}))
         mbm.__main__.controller.post_photo.assert_has_calls(
             [call.post_photo([], caption='caption', link='link',
                              tags='tag1,tag2', data='data'),
@@ -135,7 +135,7 @@ class MainTestCase(unittest.TestCase):
                                                'caption': 'caption',
                                                'link': 'link',
                                                'tags': 'tag1,tag2',
-                                               'source': 'data'}))
+                                               'img_source': 'data'}))
             sys.exit.assert_called_with(1)
         mbm.__main__.controller.mock_reset()
 

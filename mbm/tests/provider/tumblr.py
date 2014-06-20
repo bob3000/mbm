@@ -28,9 +28,9 @@ class TumblrTestCase(unittest.TestCase):
             cfg_parser.write(conf)
 
         attrs_success = {'code': 200,
-                         'read.return_value': '\{"body": "todo bien"\}'}
+                         'payload.return_value': '\{"body": "todo bien"\}'}
         attrs_error = {'code': 404,
-                       'read.return_value': '\{"error": "todo mal"\}'}
+                       'payload.return_value': '\{"error": "todo mal"\}'}
         self.api_response = MagicMock()
         self.api_response.configure_mock(**attrs_success)
         self.error_api_response = MagicMock()

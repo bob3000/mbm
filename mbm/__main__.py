@@ -44,9 +44,11 @@ def parse_args(command_line):
                               help="Coma separated list of accounts")
     photo_parser.add_argument("-t", "--tags", default="",
                               help="Coma separated list of tags")
-    photo_parser.add_argument("-c", "--caption", help="Photo caption")
-    photo_parser.add_argument("-l", "--link", help="Adds a link to the photo")
-    photo_parser.add_argument("source",
+    photo_parser.add_argument("-c", "--caption", default="",
+                              help="Photo caption")
+    photo_parser.add_argument("-l", "--link", default="",
+                              help="Adds a link to the photo")
+    photo_parser.add_argument("img_source",
                               help="Can either be a local path or an URL")
     photo_parser.set_defaults(func=post_photo)
 
@@ -103,22 +105,22 @@ def post_text(args):
         controller.post_text(accounts, args.title,
                             args.body, args.tags)
     except RuntimeError as e:
-        print("Could not post: {}".format(e), file=sys.stderr)
+        print("Error:", str(e), file=sys.stderr)
         sys.exit(1)
 
 
 def post_photo(args):
     accounts = account_list(args)
-    if urllib.parse.urlparse(args.source)[0] in ("http", "https"):
+    if urllib.parse.urlparse(args.img_source)[0] in ("http", "https"):
         kwargs = dict(caption=args.caption, link=args.link,
-                      tags=args.tags, source=args.source)
+                      tags=args.tags, source=args.img_source)
     else:
         kwargs = dict(caption=args.caption, link=args.link,
-                      tags=args.tags, data=args.source)
+                      tags=args.tags, data=args.img_source)
     try:
         controller.post_photo(accounts, **kwargs)
     except RuntimeError as e:
-        print("Could not post: {}".format(e), file=sys.stderr)
+        print("Error:", str(e), file=sys.stderr)
         sys.exit(1)
 
 

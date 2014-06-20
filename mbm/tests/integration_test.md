@@ -80,8 +80,31 @@ we are going to show the behavior of every single post type.
     >>> sh("mbm post text 'a title' 'a text body'")
     Error: No default account defined
     >>> sh("mbm account new myaccount")
-    >>> sh("mbm  post text --account=myaccount 'a title' 'a text body'")
+    >>> sh("mbm post text --account=myaccount --tags=tag1,tag2 "
+    ...    "'a title' 'a text body'")
+
+Next we will reconficure the mocked response so it will bring up an error.
+
+    >>> fake_response_methods.update({"getcode.return_value": 404})
+    >>> fake_response.configure_mock(**fake_response_methods)
+
+    >>> sh("mbm post text --account=myaccount 'a title' 'a text body'")
+    Error: Tumblr API responded with code 404: ...
 
 ### picture posting
 
+The last argument of the command line is the source which can either be an url
+or a filename.
+
+    >>> sh("mbm post photo --account=myaccount path_to_img")
+    Error: Tumblr API responded with code 404: ...
+
+Make the fake response return something positive again.
+
+    >>> fake_response_methods.update({"getcode.return_value": 200})
+    >>> fake_response.configure_mock(**fake_response_methods)
+
+    >>> sh("mbm post photo --account=myaccount path_to_img")
+    >>> sh("mbm post photo --account=myaccount --caption=caption --link=link "
+    ...    "--tags=tag1,tag2 http://www.some.url.net")
 

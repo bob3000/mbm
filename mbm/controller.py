@@ -20,7 +20,7 @@ class Controller():
         for account in accounts:
             try:
                 photo = account.get_model("Photo")(
-                    caption, link, tags, data, source)
+                    account, caption, link, tags, data, source)
                 photo.post()
             except mbm.datatype.ProviderException as e:
                 raise RuntimeError(e)
