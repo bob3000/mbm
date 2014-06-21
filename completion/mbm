@@ -1,0 +1,51 @@
+# mbm completion                                           -*- shell-script -*-
+
+_mbm() {
+    local cur prev words cword split
+    _init_completion || return
+
+    #parse_help() {
+        #echo $( $1 $2 $3 -h | awk -F',' '/\s\-/ {split($1, a, " "); printf "%s ",a[1]}' )
+    #}
+
+    if [[ $cword -eq 1 ]]; then
+        COMPREPLY=( $( compgen -W 'account post' -- "$cur" ) )
+        return 0
+    fi
+
+    if [[ "$prev" == "account" ]]; then
+        COMPREPLY=( $( compgen -W 'new list edit delete' -- "$cur" ) )
+        case "$prev" in
+            edit|delete)
+                COMPREPLY=( $( compgen -W "$( mbm account list )"  -- "$cur" ) )
+                ;;
+        esac
+        return 0
+    fi
+
+    if [[ "$prev" == "post" ]]; then
+        COMPREPLY=( $( compgen -W 'text photo' -- "$cur" ) )
+        return 0
+    fi
+
+    if [[ "$prev" == "text" ]]; then
+        #if [[ $cur == -* ]]; then
+            #COMPREPLY=( $( compgen -W "$(parse_help post text)" -- "$cur" ) )
+        #else
+            _filedir -f
+        #fi
+        return 0
+    fi
+
+    if [[ "$prev" == "photo" ]]; then
+        #if [[ $cur == -* ]]; then
+            #COMPREPLY=( $( compgen -W "$(parse_help post photo)" -- "$cur" ) )
+        #else
+            _filedir
+        #fi
+        return 0
+    fi
+
+} && complete -F _mbm mbm
+
+# ex: ts=4 sw=4 et filetype=sh

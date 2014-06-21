@@ -6,7 +6,8 @@ setup(
     license="GNU GPL v3",
     packages=[
         "mbm",
-        "mbm.tests",
+        "mbm.lib",
+        "mbm.provider",
     ],
     test_suite="mbm",
     install_requires={
@@ -17,6 +18,8 @@ setup(
         ],
     },
     data_files=[
+        ('/usr/share/man/man1', ['man/mbm.1.gz']),
+        ('/usr/share/bash-completion/completions', ['completion/mbm']),
     ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",

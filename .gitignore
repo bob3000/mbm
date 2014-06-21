@@ -2,8 +2,11 @@
 .ropeproject
 .vagrant
 *.swp
-htmlcov
+htmlcov/
 __pycache__
 *.pyc
 *.egg-info
-test_config
+test_config/
+man/mbm.1.gz
+build/
+dist/

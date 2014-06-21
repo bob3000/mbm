@@ -26,6 +26,7 @@ package { "python3": }
 package { "python-dev": }
 package { "python3-setuptools": }
 package { "pep8": }
+package { "python3-flake8": }
 
 # install coverage
 exec { "easy_install3 coverage":
