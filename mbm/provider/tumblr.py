@@ -18,7 +18,7 @@ class Account(mbm.config.Account):
 
     def get_model(self, cls):
         """
-        Returns one of the data model classes in this module which fit to this
+        Returns one of the data model classes in this module which fits to this
         account type.
         """
         try:

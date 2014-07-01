@@ -32,8 +32,11 @@ def parse_args(command_line):
                              help="Coma separated list of accounts to post to")
     text_parser.add_argument("-t", "--tags", default="",
                              help="Coma separated list of tags")
-    text_parser.add_argument("title", help="Title of post")
-    text_parser.add_argument("body", help="Body of post")
+    text_parser.add_argument("-e", "--extract-title", action="store_true",
+                             help="Treat first line of the post body ad the "
+                             "post title")
+    text_parser.add_argument("-f", "--title", default="", help="Title of post")
+    text_parser.add_argument("-b", "--body", default="", help="Body of post")
     text_parser.set_defaults(func=post_text)
 
     # # photo posts
@@ -100,11 +103,19 @@ def manage_account(args):
 
 
 def post_text(args):
-    accounts = account_list(args)
     try:
-        controller.post_text(accounts, args.title,
-                            args.body, args.tags)
-    except RuntimeError as e:
+        accounts = account_list(args)
+        if not args.body:
+            body = sys.stdin.read()
+        else:
+            with open(mbm.config.expand_dir(args.body), 'r') as f:
+                body = f.read()
+        title = args.title
+        if not title and args.extract_title:
+            title = body.split("\n")[0]
+            body = "\n".join(body.split("\n")[1:]).lstrip("\n")
+        controller.post_text(accounts, title, body, args.tags)
+    except (RuntimeError, FileNotFoundError) as e:
         print("Error:", str(e), file=sys.stderr)
         sys.exit(1)
 
@@ -115,8 +126,11 @@ def post_photo(args):
         kwargs = dict(caption=args.caption, link=args.link,
                       tags=args.tags, source=args.img_source)
     else:
+        img_source = []
+        with open(mbm.config.expand_dir(args.img_source), 'r') as f:
+            img_source.append(urllib.parse.quote(f.read()))
         kwargs = dict(caption=args.caption, link=args.link,
-                      tags=args.tags, data=args.img_source)
+                      tags=args.tags, data=img_source)
     try:
         controller.post_photo(accounts, **kwargs)
     except RuntimeError as e:
