@@ -23,8 +23,8 @@ class ApiTestCase(unittest.TestCase):
 
     def test_authorize_request(self):
         fake_request = MagicMock()
-        fake_request.full_url = ("https://api.twitter.com/1/statuses/update.json"
-                            "?include_entities=true")
+        fake_request.full_url = ("https://api.twitter.com/1/statuses/update"
+                                 ".json?include_entities=true")
         fake_request.get_method = lambda: "POST"
         fake_request.data = "status=" + urllib.parse.quote(
             "Hello Ladies + Gentlemen, a signed OAuth request!")

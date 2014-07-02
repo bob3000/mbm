@@ -16,6 +16,7 @@ def namespace(contents):
     n.__dict__.update(contents)
     return n
 
+
 class MainTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -102,7 +103,6 @@ class MainTestCase(unittest.TestCase):
         sys.exit.assert_called_with(2)
         sys.exit.reset_mock()
 
-
     def test_post_text(self):
         mbm.__main__.post_text(namespace({'accounts': 'acc1,acc2',
                                           'title': 'title',
@@ -115,12 +115,13 @@ class MainTestCase(unittest.TestCase):
                                           'extract_title': True,
                                           'tags': 'tag1,tag2'}))
         with patch('sys.stdin') as stdin:
-            stdin.read = MagicMock(return_value="Body comming\n from\n stdin\n")
+            stdin.read = MagicMock(
+                return_value="Body comming\n from\n stdin\n")
             mbm.__main__.post_text(namespace({'accounts': 'acc1,acc2',
-                                            'title': 'title',
-                                            'body': '',
-                                            'extract_title': False,
-                                            'tags': 'tag1,tag2'}))
+                                              'title': 'title',
+                                              'body': '',
+                                              'extract_title': False,
+                                              'tags': 'tag1,tag2'}))
         mbm.__main__.controller.post_text.assert_has_calls(
             [call.post_text(
                 [], 'title', 'this is a title\n\nthis is\nthe text body\n',
@@ -146,12 +147,11 @@ class MainTestCase(unittest.TestCase):
                        'link': 'link', 'tags': 'tag1,tag2',
                        'img_source': 'http://data'}))
         mbm.__main__.controller.post_photo.assert_has_calls(
-            [call(
-                [], caption='caption', link='link', tags='tag1,tag2',
-                data=['this%20is%20a%20title%0A%0Athis%20is%0Athe%20text%20'
-                'body%0A']),
-             call([], caption='caption', link='link',
-                             source='http://data', tags='tag1,tag2')])
+            [call([], caption='caption', link='link', tags='tag1,tag2',
+                  data=['this%20is%20a%20title%0A%0Athis%20is%0Athe%20text%20'
+                        'body%0A']),
+             call([], caption='caption', link='link', source='http://data',
+                  tags='tag1,tag2')])
         with patch('mbm.__main__.controller.post_photo',
                    side_effect=RuntimeError):
             mbm.__main__.post_photo(

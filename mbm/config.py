@@ -14,8 +14,10 @@ import mbm.provider
 DEFAULT_GLOBAL_CONF_PATH = "~/.mbm"
 DEFAULT_ACCOUNTS_PATH = "~/.mbm/accounts"
 
+
 def expand_dir(dir):
     return os.path.abspath(os.path.expanduser(os.path.expandvars(dir)))
+
 
 def prepare_conf_dirs(global_conf_path, accounts_path):
     global_conf_path = expand_dir(global_conf_path)
@@ -55,7 +57,7 @@ class Config():
         self.file_path = file_path
         self.config = configparser.ConfigParser()
         self.config.read(file_path)
-        for k,v in self.DEFAULT_CONFIG.items():
+        for k, v in self.DEFAULT_CONFIG.items():
             if not self.config.has_option("DEFAULT", k):
                 self.config.set("DEFAULT", k, v)
 
@@ -95,8 +97,8 @@ class Global(Config):
         self.accounts_path = expand_dir(accounts_path)
         # keys: account name = filename without extension
         # values: Account objects made by the account factory method
-        self.accounts = {i.split("/")[-1][:-4]: account_factory(self,
-            os.path.join(self.accounts_path, i))
+        self.accounts = {i.split("/")[-1][:-4]: account_factory(
+            self, os.path.join(self.accounts_path, i))
             for i in os.listdir(self.accounts_path) if i.endswith(".ini")}
 
 # TODO: The default for account_type has to be changed to None as soon as
@@ -129,7 +131,8 @@ class Global(Config):
     def default_account(self):
         try:
             name = self.config['DEFAULT']['default_account']
-            if not name: raise KeyError
+            if not name:
+                raise KeyError
         except KeyError:
             raise AccountException("No default account defined")
         account = self.accounts.get(name)
