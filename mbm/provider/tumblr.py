@@ -6,12 +6,13 @@ import mbm.datatype
 
 class Account(mbm.config.Account):
 
-    def __init__(self, file_path, name):
-        super().__init__(file_path, name)
-        oauth = mbm.lib.oauth.OAuth(mbm.config.CONSUMER_KEY,
-                                    mbm.config.CONSUMER_SECRET,
-                                    self.config['DEFAULT']['token'],
-                                    self.config['DEFAULT']['token_secret'])
+    def __init__(self, global_conf, file_path, name):
+        super().__init__(global_conf, file_path, name)
+        oauth = mbm.lib.oauth.OAuth(
+            self.global_conf.config['DEFAULT']['consumer_key'],
+            self.global_conf.config['DEFAULT']['consumer_secret'],
+            self.config['DEFAULT']['token'],
+            self.config['DEFAULT']['token_secret'])
         base_url = "https://api.tumblr.com/v2/blog/{}".format(
             self.config['DEFAULT']['username'])
         self.api = mbm.lib.api.Api(oauth, base_url)

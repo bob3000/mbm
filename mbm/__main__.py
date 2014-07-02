@@ -148,7 +148,7 @@ def main(argv=None):
         print(str(e), file=sys.stderr)
         sys.exit(1)
     controller = mbm.controller.Controller(
-        mbm.config.DEFAULT_GLOBAL_CONF_PATH,
+        os.path.join(mbm.config.DEFAULT_GLOBAL_CONF_PATH, "global_config"),
         mbm.config.DEFAULT_ACCOUNTS_PATH)
     args = parse_args(argv)
     if 'func' in args:

@@ -35,7 +35,8 @@ class TumblrTestCase(unittest.TestCase):
         self.api_response.configure_mock(**attrs_success)
         self.error_api_response = MagicMock()
         self.error_api_response.configure_mock(**attrs_error)
-        self.account = mbm.provider.tumblr.Account(self.tmp_file, "tumblr")
+        self.account = mbm.provider.tumblr.Account(
+            MagicMock(), self.tmp_file, "tumblr")
         self.account.api.post = MagicMock(return_value=self.api_response)
 
     def test_text(self):

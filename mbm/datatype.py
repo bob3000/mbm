@@ -1,3 +1,6 @@
+"""
+This module contains interfaces which describe provider implementations.
+"""
 import abc
 
 

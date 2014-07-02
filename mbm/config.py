@@ -1,5 +1,5 @@
 """
-Contains account configuration and OAuth credentials
+A class hierarchy implementing persistent configurations
 """
 
 import abc
@@ -10,9 +10,6 @@ import os.path
 
 import mbm.provider
 
-
-CONSUMER_KEY = ""
-CONSUMER_SECRET = ""
 
 DEFAULT_GLOBAL_CONF_PATH = "~/.mbm"
 DEFAULT_ACCOUNTS_PATH = "~/.mbm/accounts"
@@ -38,6 +35,21 @@ def prepare_conf_dirs(global_conf_path, accounts_path):
 
 
 class Config():
+    """
+    Classes inheriting from this class gain the ability to persist
+    configurations in configuration files. Generic methods like new, delete
+    and write are provided.
+
+    FOR THE INHERITING CLASS TO WORK it has to provide a class variable called
+    `DEFAULT_CONFIG` which has to be a dictionary. The dictionary contents will
+    be written to a file when the new method is called.
+
+    The inheriting class has to call the parents `__init__` method with the
+    `file_path` argument. Than it has access to the `self.config` object
+    provided by the parent. `self.config` is a ConfigParser object.
+
+    Below the classes `Global` and `Account` are working examples.
+    """
 
     def __init__(self, file_path):
         self.file_path = file_path
@@ -69,10 +81,12 @@ class Global(Config):
     >>> cfg = Global("/path/to/config_file", "/path/to/account_configs")
     >>> cfg.create_account("my_account")
 
-    >>> cfg.accounts['my_account'].token
+    >>> cfg.accounts['my_account'].config['DEFAULT']['token']
     """
 
     DEFAULT_CONFIG = {'default_account': '',
+                      'consumer_key': '',
+                      'consumer_secret': '',
                       }
 
     def __init__(self, file_path, accounts_path):
@@ -81,7 +95,7 @@ class Global(Config):
         self.accounts_path = expand_dir(accounts_path)
         # keys: account name = filename without extension
         # values: Account objects made by the account factory method
-        self.accounts = {i.split("/")[-1][:-4]: account_factory(
+        self.accounts = {i.split("/")[-1][:-4]: account_factory(self,
             os.path.join(self.accounts_path, i))
             for i in os.listdir(self.accounts_path) if i.endswith(".ini")}
 
@@ -92,7 +106,7 @@ class Global(Config):
             raise AccountException("Account {} already "
                                    "exists".format(name))
         config_path = os.path.join(self.accounts_path, name + ".ini")
-        account = account_factory(config_path, account_type)
+        account = account_factory(self, config_path, account_type)
         account.new()
         self.accounts[name] = account
         return account
@@ -101,7 +115,7 @@ class Global(Config):
         if name not in self.accounts:
             raise AccountException("Unknown account {}".format(name))
         config_path = os.path.join(self.accounts_path, name + ".ini")
-        account = account_factory(config_path)
+        account = account_factory(self, config_path)
         account.delete()
         del self.accounts[name]
 
@@ -124,7 +138,7 @@ class Global(Config):
         return account
 
 
-def account_factory(conf_file_path, account_type=None):
+def account_factory(global_conf, conf_file_path, account_type=None):
     name = conf_file_path.split("/")[-1][:-4]
     if not account_type:
         cfg_parser = configparser.ConfigParser()
@@ -136,7 +150,7 @@ def account_factory(conf_file_path, account_type=None):
                 "No type specified in config file {}".format(conf_file_path))
     importlib.import_module("mbm.provider.{}".format(account_type))
     provider = getattr(mbm.provider, account_type)
-    return provider.Account(conf_file_path, name)
+    return provider.Account(global_conf, conf_file_path, name)
 
 
 class Account(Config, abc.ABC):
@@ -151,9 +165,10 @@ class Account(Config, abc.ABC):
                       'token_secret': '',
                       }
 
-    def __init__(self, file_path, name):
+    def __init__(self, global_conf, file_path, name):
         super().__init__(file_path)
         self.name = name
+        self.global_conf = global_conf
 
     @abc.abstractmethod
     def get_model(self, cls):
