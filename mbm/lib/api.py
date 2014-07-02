@@ -17,7 +17,8 @@ class Api():
     All given method parameters are turned to URL parameters.
 
     Adding a parameter named 'post_data' with a dictionary as it's value will
-    result in a POST request with a json body taken form the given dictionary.
+    result in a POST request body taken form the given dictionary. The requests
+    content type will be application/x-www-form-urlencoded.
 
     >>> api.posts_text(post_data={'name': 'new post',
     ...                           'content': 'post content'})
@@ -37,15 +38,16 @@ class Api():
         params = {k: v for k, v in kwargs.items() if k != "post_data"}
         url = self._url_from_method(params)
         if post_data:
+            data = urllib.parse.urlencode(sorted(list(post_data.items())))
             req = urllib.request.Request(
-                url, data=post_data, method="POST")
+                url, data=data.encode(), method="POST")
             req = self.oauth.authorize_request(req)
             res = urllib.request.urlopen(req, data=post_data)
         else:
-            req = urllib.request.Request(url)
+            req = urllib.request.Request(url, method="GET")
             req = self.oauth.authorize_request(req)
             res = urllib.request.urlopen(req)
-        return self._handle_request(res)
+        return self._handle_response(res)
 
     def _url_from_method(self, params):
         url = "/".join([self.base_url.rstrip("/"), self.current_route])
@@ -55,10 +57,9 @@ class Api():
             url = "?".join([url, params])
         return url
 
-    def _handle_request(self, res):
+    def _handle_response(self, res):
         headers = {k.lower(): v.lower() for k, v in res.getheaders()}
-        if ("content-type" not in headers or
-                'application/json' not in headers['content-type']):
+        if ('application/json' not in headers.get('content-type', "")):
             raise ApiException("content-type is not application/json")
         try:
             data = json.loads(res.read())

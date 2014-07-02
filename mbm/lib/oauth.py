@@ -41,17 +41,18 @@ class OAuth():
         return re.sub(r"\W", "", base64.b64encode(os.urandom(32)).decode())
 
     def _signature(self, oauth_headers, request):
-        url_params = ([] if "?" not in request.full_url else
-                      [tuple(i.split("=")) for i in
-                       request.full_url.split("?").pop().split("&")])
-        headers_n_params = sorted(
-            list(copy.deepcopy(oauth_headers).items()) + url_params)
-        headers_n_params_str = "&".join(["=".join(
-            (urllib.parse.quote(k.encode()), urllib.parse.quote(v.encode())))
-            for k, v in headers_n_params])
-        sig_base_str = "&".join([request.get_method(),
-                                 urllib.parse.quote(request.full_url),
-                                 urllib.parse.quote(headers_n_params_str)])
+        url_params = urllib.parse.parse_qsl(
+            urllib.parse.urlparse(request.full_url)[4])
+        body = urllib.parse.parse_qsl(request.data)
+        headers = list(copy.deepcopy(oauth_headers).items())
+        headers_params_body = headers + url_params + body
+        params = ["=".join((urllib.parse.quote(k), urllib.parse.quote(v)))
+                  for k, v in headers_params_body]
+        params_str = "&".join(sorted(params))
+        url = request.full_url.split("?").pop(0)
+        sig_base_str = "&".join([request.get_method().upper(),
+                                 urllib.parse.quote(url, safe=""),
+                                 urllib.parse.quote(params_str, safe="")])
         signing_key = "&".join([urllib.parse.quote(self.consumer_secret),
                                 urllib.parse.quote(self.token_secret)])
         return base64.b64encode(

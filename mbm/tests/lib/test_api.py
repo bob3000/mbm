@@ -29,15 +29,16 @@ class ApiTestCase(unittest.TestCase):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")
         api.posts_queue(api_key="asdf98", some="value")
         urllib.request.Request.assert_called_with(
-            "http://some.url/posts/queue?api_key=asdf98&some=value")
+            'http://some.url/posts/queue?api_key=asdf98&some=value',
+            method='GET')
 
     def test_api_call_with_payload(self):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")
         api.posts(api_key="asdf98",
                   post_data={"type": "text", "title": "My new bike"})
         urllib.request.Request.assert_called_with(
-            "http://some.url/posts?api_key=asdf98",
-            data={"type": "text", "title": "My new bike"}, method="POST")
+            'http://some.url/posts?api_key=asdf98',
+            data=b'title=My+new+bike&type=text', method='POST')
 
     def test_wrong_content_type(self):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")
