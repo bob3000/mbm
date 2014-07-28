@@ -72,7 +72,8 @@ class ApiTestCase(unittest.TestCase):
                 "L8qq9PZyRg6ieKGEKhZolGC0vJWLw8iEJ88DRdyOg",  # consumer secret
                 "http://localhost/oauth/request_token",  # request token url
                 "http://localhost/oauth/authorize",  # authorize url
-                "http://localhost/oauth/callback"  # oauth callback
+                "http://localhost/oauth/callback",  # oauth callback
+                "http://localhost/oauth/register_req_token"  # register token
                 ]
         mbm.lib.oauth.authorize_user(*args)
 

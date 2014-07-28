@@ -40,7 +40,7 @@ class OAuth():
 
 
 def authorize_user(consumer_key, consumer_secret, request_token_url,
-                   authorize_url, oauth_callback):
+                   authorize_url, oauth_callback, register_req_token_url=""):
     request = urllib.request.Request(request_token_url, data=b"",
                                      method="POST")
     oauth_headers = {}
@@ -66,6 +66,9 @@ def authorize_user(consumer_key, consumer_secret, request_token_url,
                              " oauth_callback_confirmed = false")
     authorize_url = "?".join([authorize_url,
                              "oauth_token=" + body['oauth_token']])
+    if register_req_token_url:
+        data = "oauth_token=" + body['oauth_token']
+        urllib.request.urlopen(register_req_token_url, data=data.encode())
     webbrowser.open_new(authorize_url)
 
 
