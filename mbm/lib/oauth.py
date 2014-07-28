@@ -31,8 +31,8 @@ class OAuth():
         oauth_headers['oauth_timestamp'] = str(int(time.time()))
         oauth_headers['oauth_token'] = self.token
         oauth_headers['oauth_version'] = "1.0"
-        oauth_headers['oauth_signature'] = self._signature(
-            oauth_headers, request)
+        oauth_headers['oauth_signature'] = _signature(
+            oauth_headers, request, self.consumer_secret, self.token_secret)
         for k, v in oauth_headers.items():
             request.add_header(k, v)
         return request
@@ -40,21 +40,22 @@ class OAuth():
     def nonce(self):
         return re.sub(r"\W", "", base64.b64encode(os.urandom(32)).decode())
 
-    def _signature(self, oauth_headers, request):
-        url_params = urllib.parse.parse_qsl(
-            urllib.parse.urlparse(request.full_url)[4])
-        body = urllib.parse.parse_qsl(request.data)
-        headers = list(copy.deepcopy(oauth_headers).items())
-        headers_params_body = headers + url_params + body
-        params = ["=".join((urllib.parse.quote(k), urllib.parse.quote(v)))
-                  for k, v in headers_params_body]
-        params_str = "&".join(sorted(params))
-        url = request.full_url.split("?").pop(0)
-        sig_base_str = "&".join([request.get_method().upper(),
-                                 urllib.parse.quote(url, safe=""),
-                                 urllib.parse.quote(params_str, safe="")])
-        signing_key = "&".join([urllib.parse.quote(self.consumer_secret),
-                                urllib.parse.quote(self.token_secret)])
-        return base64.b64encode(
-            hmac.new(signing_key.encode(), msg=sig_base_str.encode(),
-                     digestmod=hashlib.sha1).digest()).decode()
+
+def _signature(oauth_headers, request, consumer_secret, token_secret):
+    url_params = urllib.parse.parse_qsl(
+        urllib.parse.urlparse(request.full_url)[4])
+    body = urllib.parse.parse_qsl(request.data)
+    headers = list(copy.deepcopy(oauth_headers).items())
+    headers_params_body = headers + url_params + body
+    params = ["=".join((urllib.parse.quote(k), urllib.parse.quote(v)))
+              for k, v in headers_params_body]
+    params_str = "&".join(sorted(params))
+    url = request.full_url.split("?").pop(0)
+    sig_base_str = "&".join([request.get_method().upper(),
+                             urllib.parse.quote(url, safe=""),
+                             urllib.parse.quote(params_str, safe="")])
+    signing_key = "&".join([urllib.parse.quote(consumer_secret),
+                            urllib.parse.quote(token_secret)])
+    return base64.b64encode(
+        hmac.new(signing_key.encode(), msg=sig_base_str.encode(),
+                 digestmod=hashlib.sha1).digest()).decode()

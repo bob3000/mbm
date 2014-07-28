@@ -22,7 +22,7 @@ pep8:
 
 clean:
 	python3 setup.py clean
-	rm -rf mbm.egg-info mbm/__pycache__/
+	rm -rf mbm.egg-info mbm-?.?.?
 	rm -rf .coverage htmlcov/
 	rm -rf man/mbm.1.gz
 	rm -rf test_config
