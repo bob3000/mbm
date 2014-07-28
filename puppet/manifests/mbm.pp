@@ -21,12 +21,21 @@ file { "/home/vagrant/.bash_login":
     ",
 }
 
+file { "/var/www/html/oauth":
+    ensure => "link",
+    target => "/home/vagrant/mbm/token_procurer",
+}
+
 # basic dependencies
 package { "python3": }
 package { "python-dev": }
 package { "python3-setuptools": }
 package { "pep8": }
 package { "python3-flake8": }
+
+# php
+package { "php5": }
+package { "php5-curl": }
 
 # install coverage
 exec { "easy_install3 coverage":

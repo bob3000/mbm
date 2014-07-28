@@ -6,6 +6,7 @@ Vagrant.configure("2") do |config|
   config.vm.box_url = "http://cloud-images.ubuntu.com/raring/current/trusty-server-cloudimg-vagrant-amd64-disk1.box"
   config.vm.host_name = "mbm"
   config.vm.define :mbm do |config|
+    config.vm.network "forwarded_port", guest: 80, host: 8080
     config.vm.synced_folder ".", "/home/vagrant/mbm"
     config.vm.provision :puppet do |puppet|
       puppet.manifests_path = "puppet/manifests"
