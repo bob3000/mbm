@@ -26,7 +26,7 @@ class OAuth():
         """
         oauth_headers = {}
         oauth_headers['oauth_consumer_key'] = self.consumer_key
-        oauth_headers['oauth_nonce'] = self.nonce()
+        oauth_headers['oauth_nonce'] = nonce()
         oauth_headers['oauth_signature_method'] = "HMAC-SHA1"
         oauth_headers['oauth_timestamp'] = str(int(time.time()))
         oauth_headers['oauth_token'] = self.token
@@ -37,8 +37,9 @@ class OAuth():
             request.add_header(k, v)
         return request
 
-    def nonce(self):
-        return re.sub(r"\W", "", base64.b64encode(os.urandom(32)).decode())
+
+def nonce():
+    return re.sub(r"\W", "", base64.b64encode(os.urandom(32)).decode())
 
 
 def _signature(oauth_headers, request, consumer_secret, token_secret):

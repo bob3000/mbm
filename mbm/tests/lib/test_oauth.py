@@ -14,12 +14,7 @@ class ApiTestCase(unittest.TestCase):
         time.time = MagicMock(return_value=1318622958)
 
     def test_nonce(self):
-        auth = mbm.lib.oauth.OAuth(
-            "xvz1evFS4wEEPTGEFPHBog",  # consumer key
-            "kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw",  # consumer secret
-            "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb",  # token
-            "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE")  # token secret
-        self.assertIsInstance(auth.nonce(), str)
+        self.assertIsInstance(mbm.lib.oauth.nonce(), str)
 
     def test_authorize_request(self):
         fake_request = MagicMock()
@@ -28,8 +23,8 @@ class ApiTestCase(unittest.TestCase):
         fake_request.get_method = lambda: "POST"
         fake_request.data = "status=" + urllib.parse.quote(
             "Hello Ladies + Gentlemen, a signed OAuth request!")
-        real_nonce = mbm.lib.oauth.OAuth.nonce
-        mbm.lib.oauth.OAuth.nonce = MagicMock(
+        real_nonce = mbm.lib.oauth.nonce
+        mbm.lib.oauth.nonce = MagicMock(
             return_value="kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg")
         auth = mbm.lib.oauth.OAuth(
             "xvz1evFS4wEEPTGEFPHBog",  # consumer key
@@ -51,7 +46,7 @@ class ApiTestCase(unittest.TestCase):
             call.add_header('oauth_version', '1.0')]
         self.assertListEqual(sorted(expected_calls),
                              sorted(fake_request.mock_calls))
-        mbm.lib.oauth.OAuth.nonce = real_nonce
+        mbm.lib.oauth.nonce = real_nonce
 
     def tearDown(self):
         time.time = self.real_time
