@@ -7,6 +7,7 @@ import re
 import time
 import urllib.parse
 import urllib.request
+import webbrowser
 
 
 class OAuth():
@@ -38,6 +39,36 @@ class OAuth():
         return request
 
 
+def authorize_user(consumer_key, consumer_secret, request_token_url,
+                   authorize_url, oauth_callback):
+    request = urllib.request.Request(request_token_url, data=b"",
+                                     method="POST")
+    oauth_headers = {}
+    oauth_headers['oauth_callback'] = oauth_callback
+    oauth_headers['oauth_consumer_key'] = consumer_key
+    oauth_headers['oauth_nonce'] = nonce()
+    oauth_headers['oauth_signature_method'] = "HMAC-SHA1"
+    oauth_headers['oauth_timestamp'] = str(int(time.time()))
+    oauth_headers['oauth_version'] = "1.0"
+    oauth_headers['oauth_signature'] = _signature(
+        oauth_headers, request, consumer_secret, "")
+    for k, v in oauth_headers.items():
+        request.add_header(k, v)
+    response = urllib.request.urlopen(request)
+    if response.status != 200:
+        raise OAuthException("Api responded with code {} while obtaning"
+                             " request token. Reason: {}".format(
+                                 response.status, response.reason))
+    body = urllib.parse.parse_qs(response.read().decode())
+    body = {k: v[0] for k, v in body.items()}
+    if body.get("oauth_callback_confirmed") != "true":
+        raise OAuthException("Api responded with"
+                             " oauth_callback_confirmed = false")
+    authorize_url = "?".join([authorize_url,
+                             "oauth_token=" + body['oauth_token']])
+    webbrowser.open_new(authorize_url)
+
+
 def nonce():
     return re.sub(r"\W", "", base64.b64encode(os.urandom(32)).decode())
 
@@ -60,3 +91,7 @@ def _signature(oauth_headers, request, consumer_secret, token_secret):
     return base64.b64encode(
         hmac.new(signing_key.encode(), msg=sig_base_str.encode(),
                  digestmod=hashlib.sha1).digest()).decode()
+
+
+class OAuthException(Exception):
+    pass
