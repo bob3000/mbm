@@ -36,7 +36,6 @@ package { "python3-flake8": }
 
 # php
 package { "php5": }
-package { "php5-curl": }
 package { "php-pear": }
 
 exec { "pear upgrade":
