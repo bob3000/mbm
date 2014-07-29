@@ -87,8 +87,6 @@ class Global(Config):
     """
 
     DEFAULT_CONFIG = {'default_account': '',
-                      'consumer_key': '',
-                      'consumer_secret': '',
                       }
 
     def __init__(self, file_path, accounts_path):
@@ -172,6 +170,19 @@ class Account(Config, abc.ABC):
         super().__init__(file_path)
         self.name = name
         self.global_conf = global_conf
+        if (self.config['DEFAULT']['account_type'] and
+            not global_conf.config.has_section(
+                self.config['DEFAULT']['account_type'])):
+            global_conf.config.add_section(
+                self.config['DEFAULT']['account_type'])
+            global_conf.config.set(self.config['DEFAULT']['account_type'],
+                            "consumer_key", "")
+            global_conf.config.set(self.config['DEFAULT']['account_type'],
+                            "consumer_secret", "")
+
+    def write(self):
+        self.global_conf.write()
+        super().write()
 
     @abc.abstractmethod
     def get_model(self, cls):

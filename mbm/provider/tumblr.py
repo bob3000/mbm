@@ -9,8 +9,8 @@ class Account(mbm.config.Account):
     def __init__(self, global_conf, file_path, name):
         super().__init__(global_conf, file_path, name)
         oauth = mbm.lib.oauth.OAuth(
-            self.global_conf.config['DEFAULT']['consumer_key'],
-            self.global_conf.config['DEFAULT']['consumer_secret'],
+            self.global_conf.config['tumblr']['consumer_key'],
+            self.global_conf.config['tumblr']['consumer_secret'],
             self.config['DEFAULT']['token'],
             self.config['DEFAULT']['token_secret'])
         base_url = "https://api.tumblr.com/v2/blog/{}".format(
