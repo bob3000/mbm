@@ -7,12 +7,15 @@ import pkg_resources
 def load_tests(loader, tests, pattern):
     import os.path
     import shlex
+    from unittest.mock import MagicMock
     from mbm.__main__ import main as _main
 
     def sh(a):
         try:
             import sys
             stdout, stderr = sys.stdout, sys.stderr
+            import webbrowser
+            webbrowser.open_new = MagicMock()
             sys.stdout, sys.stderr = io.StringIO(), io.StringIO()
             _main(shlex.split(a)[1:])
         except SystemExit:  # pragma: no cover

@@ -4,18 +4,25 @@ import mbm.lib.oauth
 import mbm.datatype
 
 
+REQUEST_TOKEN_URL = "http://www.tumblr.com/oauth/request_token"
+AUTHORIZE_URL = "http://www.tumblr.com/oauth/authorize"
+ACCESS_URL = "http://www.tumblr.com/oauth/access_token"
+OAUTH_CALLBACK = ""
+REGISTER_REQ_TOKEN_URL = ""
+
+
 class Account(mbm.config.Account):
 
     def __init__(self, global_conf, file_path, name):
         super().__init__(global_conf, file_path, name)
-        oauth = mbm.lib.oauth.OAuth(
+        self.oauth = mbm.lib.oauth.OAuth(
             self.global_conf.config['tumblr']['consumer_key'],
             self.global_conf.config['tumblr']['consumer_secret'],
             self.config['DEFAULT']['token'],
             self.config['DEFAULT']['token_secret'])
         base_url = "https://api.tumblr.com/v2/blog/{}".format(
             self.config['DEFAULT']['username'])
-        self.api = mbm.lib.api.Api(oauth, base_url)
+        self.api = mbm.lib.api.Api(self.oauth, base_url)
 
     def get_model(self, cls):
         """
@@ -27,6 +34,10 @@ class Account(mbm.config.Account):
         except KeyError:
             raise mbm.config.AccountException(
                 "Data model {} does not exist".format(cls))
+
+    def procure_oauth_credentials(self):
+        self.oauth.authorize_user(REQUEST_TOKEN_URL, AUTHORIZE_URL, ACCESS_URL,
+                                  OAUTH_CALLBACK, REGISTER_REQ_TOKEN_URL)
 
 
 class Post(mbm.datatype.Post):

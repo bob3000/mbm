@@ -11,8 +11,11 @@ class GlobalConfigTestCase(unittest.TestCase):
 
     def setUp(self):
         self.real_tumblr_account = mbm.provider.tumblr.Account
-        mbm.provider.tumblr.Account = type("Account", (mbm.config.Account,),
-                                           {'get_model': lambda: "model"})
+        mbm.provider.tumblr.Account = type(
+            "Account", (mbm.config.Account,),
+            {'get_model': lambda: "model",
+             'procure_oauth_credentials': lambda: "credentials",
+             })
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.conf_file = os.path.join(self.tmp_dir.name, 'test_config.ini')
         self.accounts_dir = os.path.join(self.tmp_dir.name, "accounts")
@@ -86,6 +89,15 @@ class GlobalConfigTestCase(unittest.TestCase):
         del self.config.config['DEFAULT']['default_account']
         with self.assertRaises(mbm.config.AccountException):
             self.config.default_account()
+
+    def test_has_consumer_credentials(self):
+        self.assertFalse(self.config.has_consumer_credentials("account_type"))
+        self.config.config.add_section("account_type")
+        self.assertFalse(self.config.has_consumer_credentials('account_type'))
+        self.config.config.set("account_type", "consumer_key", "12345")
+        self.assertFalse(self.config.has_consumer_credentials('account_type'))
+        self.config.config.set("account_type", "consumer_secret", "12345")
+        self.assertTrue(self.config.has_consumer_credentials('account_type'))
 
     def tearDown(self):
         self.tmp_dir.cleanup()

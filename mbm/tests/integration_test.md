@@ -14,14 +14,27 @@ The mock needs to return an object which offers all the used methods from the
 `http.client.HTTPResponse` class for the whole program to work.
 
     >>> import http.client
-    >>> fake_response = MagicMock(spec_set=http.client.HTTPResponse)
     >>> fake_response_methods = {
     ...     "getheaders.return_value": [("content-type", "application/json")],
     ...     "read.return_value": '{"title": "a title", "body": "msg body"}',
     ...     "getcode.return_value": 200,
     ...     }
-    >>> fake_response.configure_mock(**fake_response_methods)
+
+An alternate return value for oauth logic used for obtaining access tokens.
+
+    >>> fake_oauth_response_methods = {
+    ...     "getheaders.return_value": [("content-type",
+    ...                                  "application/x-www-form-urlencoded")],
+    ...     "read.return_value": 'oauth_token=NPcudxy0yU5T3tBzho7iCotZ3cnetKw'
+    ...                          'cTIRlX0iwRl0&oauth_token_secret=veNRnAWe6i'
+    ...                          'nFuo8o2u8SLLZLjolYDmDP7SzL0YfYI'
+    ...                          '&oauth_callback_confirmed=true',
+    ...     "getcode.return_value": 200,
+    ...     }
+
+    >>> fake_response = MagicMock(spec_set=http.client.HTTPResponse)
     >>> urllib.request.urlopen.return_value = fake_response
+    >>> fake_response.configure_mock(**fake_oauth_response_methods)
 
 Another thing we don't want is an editor to open when we call account edit
 commands. Therefore we have to patch the `subprocess.check_call` method.
@@ -74,13 +87,22 @@ The `account edit` command would normally open an editor
 
 The `post` subcommand allows to post different types of data. In the following
 we are going to show the behavior of every single post type.
+The return value of the mocked urlopen method has to be changed to fit the
+program logic.
+
+    >>> fake_response.configure_mock(**fake_response_methods)
 
 ### text posting
 
     >>> sh("mbm post text --title 'a title' "
     ...    "--body 'mbm/tests/fixtures/a_post'")
     Error: No default account defined
+
+Need to change the urlopen mock payload again.
+
+    >>> fake_response.configure_mock(**fake_oauth_response_methods)
     >>> sh("mbm account new myaccount")
+    >>> fake_response.configure_mock(**fake_response_methods)
 
 Text posting either works by giving an explicit title and a path to a file
 which contains the post body or by piping text to stdin.

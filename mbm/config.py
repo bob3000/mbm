@@ -138,6 +138,15 @@ class Global(Config):
             raise AccountException("Default account does not exist")
         return account
 
+    def has_consumer_credentials(self, account_type):
+        if not self.config.has_section(account_type):
+            return False
+        if not self.config[account_type].get("consumer_key"):
+            return False
+        if not self.config[account_type].get("consumer_secret"):
+            return False
+        return True
+
 
 def account_factory(global_conf, conf_file_path, account_type=None):
     name = conf_file_path.split("/")[-1][:-4]
@@ -176,9 +185,9 @@ class Account(Config, abc.ABC):
             global_conf.config.add_section(
                 self.config['DEFAULT']['account_type'])
             global_conf.config.set(self.config['DEFAULT']['account_type'],
-                            "consumer_key", "")
+                                   "consumer_key", "")
             global_conf.config.set(self.config['DEFAULT']['account_type'],
-                            "consumer_secret", "")
+                                   "consumer_secret", "")
 
     def write(self):
         self.global_conf.write()
@@ -186,6 +195,10 @@ class Account(Config, abc.ABC):
 
     @abc.abstractmethod
     def get_model(self, cls):
+        raise NotImplementedError  # pragma: nocover
+
+    @abc.abstractmethod
+    def procure_oauth_credentials(self):
         raise NotImplementedError  # pragma: nocover
 
 

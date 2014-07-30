@@ -71,6 +71,19 @@ def account_list(args):
 
 
 def manage_account(args):
+    def edit_conf(file_path):
+        editor = os.environ.get("EDITOR") or 'vi'
+        try:
+            subprocess.check_call([editor, file_path])
+        except FileNotFoundError:
+            print("Error: $EDITOR not set. Export variable and try again",
+                  file=sys.stderr)
+            sys.exit(1)
+        except subprocess.CalledProcessError as e:
+            print("Error: the editor returned {}".format(e.returncode),
+                  file=sys.stderr)
+            sys.exit(1)
+
     if args.action in ('new', 'edit', 'delete') and not args.name:
         print("{} account: error: the following arguments are required: "
               "name".format(sys.argv[0]), file=sys.stderr)
@@ -81,22 +94,19 @@ def manage_account(args):
                 print(account_name)
         elif args.action == "new":
             controller.global_conf.create_account(args.name)
+            account = controller.global_conf.filter_accounts(
+                [args.name])[0]
+            if not controller.global_conf.has_consumer_credentials(
+                    account.config['DEFAULT']['account_type']):
+                edit_conf(controller.global_conf.file_path)
+            account.procure_oauth_credentials()
+            edit_conf(account.file_path)
         elif args.action == "delete":
             controller.global_conf.delete_account(args.name)
         elif args.action == "edit":
             account = controller.global_conf.filter_accounts(
                 [args.name])[0]
-            editor = os.environ.get("EDITOR") or 'vi'
-            try:
-                subprocess.check_call([editor, account.file_path])
-            except FileNotFoundError:
-                print("Error: $EDITOR not set. Export variable and try again",
-                      file=sys.stderr)
-                sys.exit(1)
-            except subprocess.CalledProcessError as e:
-                print("Error: the editor returned {}".format(e.returncode),
-                      file=sys.stderr)
-                sys.exit(1)
+            edit_conf(account.file_path)
     except mbm.config.AccountException as e:
         print("Error:", str(e), file=sys.stderr)
         sys.exit(2)

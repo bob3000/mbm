@@ -19,11 +19,11 @@ class ApiTestCase(unittest.TestCase):
         self.http_response = MagicMock()
         self.http_response.read = lambda: urllib.parse.urlencode(
             {"oauth_token": "NPcudxy0yU5T3tBzho7iCotZ3cnetKwcTIRlX0iwRl0",
-             "oauth_secret": "veNRnAWe6inFuo8o2u8SLLZLjolYDmDP7SzL0YfYI",
+             "oauth_token_secret": "veNRnAWe6inFuo8o2u8SLLZLjolYDmDP7SzL0YfYI",
              "oauth_callback_confirmed": "true",
-             }).encode()
-        self.http_response.status = 200
-        self.http_response.reason = "ERROR"
+             })
+        self.http_response.getcode = lambda: 200
+        self.http_response.reason = lambda: "ERROR"
 
         attrs = {'urlopen.return_value': self.http_response}
         urllib.request = MagicMock()
@@ -68,28 +68,32 @@ class ApiTestCase(unittest.TestCase):
 
     @patch("webbrowser.open_new")
     def test_authorize_user(self, webbrowser):
-        args = ["cChZNFj6T5R0TigYB9yd1w",  # consumer key
-                "L8qq9PZyRg6ieKGEKhZolGC0vJWLw8iEJ88DRdyOg",  # consumer secret
-                "http://localhost/oauth/request_token",  # request token url
+        args = ["http://localhost/oauth/request_token",  # request token url
                 "http://localhost/oauth/authorize",  # authorize url
+                "http://localhost/oauth/access",  # access url
                 "http://localhost/oauth/callback",  # oauth callback
                 "http://localhost/oauth/register_req_token"  # register token
                 ]
-        mbm.lib.oauth.authorize_user(*args)
+        auth = mbm.lib.oauth.OAuth(
+            "xvz1evFS4wEEPTGEFPHBog",  # consumer key
+            "kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw",  # consumer secret
+            "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb",  # token
+            "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE")  # token secret
+        auth.authorize_user(*args)
 
         with self.assertRaises(mbm.lib.oauth.OAuthException):
             self.http_response.read = lambda: urllib.parse.urlencode(
                 {"oauth_token": "NPcudxy0yU5T3tBzho7iCotZ3cnetKwcTIRlX0iwRl0",
-                 "oauth_secret": "veNRnAWe6inFuo8o2u8SLLZLjolYDmDP7SzL0YfYI",
+                 "oauth_token_secret": "veNRnAWe6inFuo8o2u8SLLZLjolYDmDP7YfYI",
                  "oauth_callback_confirmed": "false",
                  }).encode()
             attrs = {'urlopen.return_value': self.http_response}
             urllib.request.configure_mock(**attrs)
-            mbm.lib.oauth.authorize_user(*args)
+            auth.authorize_user(*args)
 
         with self.assertRaises(mbm.lib.oauth.OAuthException):
-            self.http_response.status = 404
-            mbm.lib.oauth.authorize_user(*args)
+            self.http_response.getcode = lambda: 404
+            auth.authorize_user(*args)
 
     def tearDown(self):
         time.time = self.real_time
