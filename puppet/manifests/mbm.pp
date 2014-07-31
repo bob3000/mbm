@@ -27,6 +27,11 @@ file { "/var/www/html/oauth":
     require => Package['php5'],
 }
 
+file { "/usr/share/bash-completion/completions/mbm":
+    ensure => "link",
+    target => "/home/vagrant/mbm/completion/mbm",
+}
+
 # basic dependencies
 package { "python3": }
 package { "python-dev": }
