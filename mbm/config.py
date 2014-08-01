@@ -54,9 +54,9 @@ class Config():
     """
 
     def __init__(self, file_path):
-        self.file_path = file_path
+        self.file_path = expand_dir(file_path)
         self.config = configparser.ConfigParser()
-        self.config.read(file_path)
+        self.config.read(self.file_path)
         for k, v in self.DEFAULT_CONFIG.items():
             if not self.config.has_option("DEFAULT", k):
                 self.config.set("DEFAULT", k, v)
@@ -75,6 +75,8 @@ class Config():
         with open(self.file_path, 'w') as conf_file:
             self.config.write(conf_file)
 
+    def read(self):
+        self.config.read(self.file_path)
 
 class Global(Config):
     """
@@ -91,7 +93,6 @@ class Global(Config):
 
     def __init__(self, file_path, accounts_path):
         super().__init__(file_path)
-        self.file_path = expand_dir(file_path)
         self.accounts_path = expand_dir(accounts_path)
         # keys: account name = filename without extension
         # values: Account objects made by the account factory method
@@ -113,7 +114,7 @@ class Global(Config):
 
     def delete_account(self, name):
         if name not in self.accounts:
-            raise AccountException("Unknown account {}".format(name))
+            raise AccountException("Unknown account '{}'".format(name))
         config_path = os.path.join(self.accounts_path, name + ".ini")
         account = account_factory(self, config_path)
         account.delete()
@@ -188,10 +189,7 @@ class Account(Config, abc.ABC):
                                    "consumer_key", "")
             global_conf.config.set(self.config['DEFAULT']['account_type'],
                                    "consumer_secret", "")
-
-    def write(self):
-        self.global_conf.write()
-        super().write()
+            self.global_conf.write()
 
     @abc.abstractmethod
     def get_model(self, cls):

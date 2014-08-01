@@ -80,7 +80,7 @@ The `account edit` command would normally open an editor
     >>> sh("mbm account edit newaccount")
     >>> sh("mbm account delete newaccount")
     >>> sh("mbm account delete newaccount")
-    Error: Unknown account newaccount
+    Error: Unknown account 'newaccount'
     >>> sh("mbm account list")
 
 ## posting tests

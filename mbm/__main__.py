@@ -99,6 +99,7 @@ def manage_account(args):
             if not controller.global_conf.has_consumer_credentials(
                     account.config['DEFAULT']['account_type']):
                 edit_conf(controller.global_conf.file_path)
+                account.reinit()
             account.procure_oauth_credentials()
             edit_conf(account.file_path)
         elif args.action == "delete":
@@ -107,7 +108,7 @@ def manage_account(args):
             account = controller.global_conf.filter_accounts(
                 [args.name])[0]
             edit_conf(account.file_path)
-    except mbm.config.AccountException as e:
+    except (mbm.config.AccountException, mbm.datatype.ProviderException) as e:
         print("Error:", str(e), file=sys.stderr)
         sys.exit(2)
 

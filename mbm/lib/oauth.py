@@ -5,8 +5,7 @@ import hmac
 import os
 import re
 import time
-import urllib.parse
-import urllib.request
+import urllib
 import webbrowser
 
 
@@ -43,7 +42,8 @@ class OAuth():
         request = urllib.request.Request(request_token_url, data=b"",
                                          method="POST")
         oauth_headers = {}
-        oauth_headers['oauth_callback'] = oauth_callback
+        oauth_headers['oauth_callback'] = urllib.parse.quote(oauth_callback,
+                                                             safe="")
         oauth_headers['oauth_consumer_key'] = self.consumer_key
         oauth_headers['oauth_nonce'] = nonce()
         oauth_headers['oauth_signature_method'] = "HMAC-SHA1"
@@ -53,7 +53,10 @@ class OAuth():
             oauth_headers, request, self.consumer_secret, "")
         for k, v in oauth_headers.items():
             request.add_header(k, v)
-        response = urllib.request.urlopen(request)
+        try:
+            response = urllib.request.urlopen(request)
+        except urllib.error.HTTPError as e:
+            raise(OAuthException(e))
         if response.getcode() != 200:
             raise OAuthException("Api responded with code {} while obtaning"
                                  " request token. Reason: "
