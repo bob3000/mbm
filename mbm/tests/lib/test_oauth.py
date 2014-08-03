@@ -48,8 +48,8 @@ class ApiTestCase(unittest.TestCase):
         auth = mbm.lib.oauth.OAuth(
             "xvz1evFS4wEEPTGEFPHBog",  # consumer key
             "kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw",  # consumer secret
-            "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb",  # token
-            "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE")  # token secret
+            token="370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb",
+            token_secret="LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE")
 
         auth.authorize_request(fake_request)
         fake_request.add_header.assert_called_with(

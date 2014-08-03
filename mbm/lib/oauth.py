@@ -14,7 +14,8 @@ class OAuth():
     Authenticate a HTTP request with OAuth headers
     """
 
-    def __init__(self, consumer_key, consumer_secret, token, token_secret):
+    def __init__(self, consumer_key,
+                 consumer_secret, token="", token_secret=""):
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
         self.token = token
