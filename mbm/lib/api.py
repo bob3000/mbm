@@ -62,7 +62,7 @@ class Api():
         if ('application/json' not in headers.get('content-type', "")):
             raise ApiException("content-type is not application/json")
         try:
-            data = json.loads(res.read())
+            data = json.loads(res.read().decode())
         except (TypeError, ValueError):
             raise ApiException("payload is not valid json")
         return ApiResponse(data, res.getcode())

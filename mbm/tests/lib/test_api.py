@@ -13,7 +13,7 @@ class ApiTestCase(unittest.TestCase):
         self.http_response = MagicMock()
         self.http_response.getheaders = \
             lambda: [("content-type", "application/json")]
-        self.http_response.read = lambda: '{"content": "my content"}'
+        self.http_response.read = lambda: b'{"content": "my content"}'
 
         attrs = {'urlopen.return_value': self.http_response}
         urllib.request = MagicMock()
@@ -51,7 +51,7 @@ class ApiTestCase(unittest.TestCase):
 
     def test_wrong_payload(self):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")
-        self.http_response.read = lambda: '<html></html>'
+        self.http_response.read = lambda: b'<html></html>'
         attrs = {'urlopen.return_value': self.http_response}
         urllib.request.configure_mock(**attrs)
         with self.assertRaises(mbm.lib.api.ApiException):

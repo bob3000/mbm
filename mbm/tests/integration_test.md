@@ -16,7 +16,7 @@ The mock needs to return an object which offers all the used methods from the
     >>> import http.client
     >>> fake_response_methods = {
     ...     "getheaders.return_value": [("content-type", "application/json")],
-    ...     "read.return_value": '{"title": "a title", "body": "msg body"}',
+    ...     "read.return_value": b'{"title": "a title", "body": "msg body"}',
     ...     "getcode.return_value": 200,
     ...     }
 
@@ -25,10 +25,10 @@ An alternate return value for oauth logic used for obtaining access tokens.
     >>> fake_oauth_response_methods = {
     ...     "getheaders.return_value": [("content-type",
     ...                                  "application/x-www-form-urlencoded")],
-    ...     "read.return_value": 'oauth_token=NPcudxy0yU5T3tBzho7iCotZ3cnetKw'
-    ...                          'cTIRlX0iwRl0&oauth_token_secret=veNRnAWe6i'
-    ...                          'nFuo8o2u8SLLZLjolYDmDP7SzL0YfYI'
-    ...                          '&oauth_callback_confirmed=true',
+    ...     "read.return_value": b'oauth_token=NPcudxy0yU5T3tBzho7iCotZ3cnetKw'
+    ...                          b'cTIRlX0iwRl0&oauth_token_secret=veNRnAWe6i'
+    ...                          b'nFuo8o2u8SLLZLjolYDmDP7SzL0YfYI'
+    ...                          b'&oauth_callback_confirmed=true',
     ...     "getcode.return_value": 200,
     ...     }
 

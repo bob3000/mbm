@@ -67,7 +67,7 @@ class OAuth():
                                  " request token. Reason: "
                                  "{}".format(response.getcode(),
                                              response.reason))
-        body = dict(urllib.parse.parse_qsl(response.read(),
+        body = dict(urllib.parse.parse_qsl(response.read().decode(),
                                            strict_parsing=True))
         if body.get("oauth_callback_confirmed") != "true":
             raise OAuthException("Api responded with "
@@ -78,7 +78,12 @@ class OAuth():
              'oauth_token_secret': body['oauth_token_secret'],
              'access_url': access_url,
              })
-        urllib.request.urlopen(register_req_token_url, data=data.encode())
+        try:
+            urllib.request.urlopen(register_req_token_url, data=data.encode())
+        except urllib.error.HTTPError as e:
+            raise(OAuthException("Could not register request token. Call to "
+                                 "URL '{}' was responded with: {}".format(
+                                     register_req_token_url, str(e))))
         authorize_url = "?".join([authorize_url,
                                  "oauth_token=" + body['oauth_token']])
         webbrowser.open_new(authorize_url)

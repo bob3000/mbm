@@ -41,8 +41,7 @@ class Account(mbm.config.Account):
                                       ACCESS_URL, OAUTH_CALLBACK,
                                       REGISTER_REQ_TOKEN_URL)
         except mbm.lib.oauth.OAuthException as e:
-            raise TumblrException("Could not retrieve request token from "
-                                  "tumblr API - {}".format(str(e)))
+            raise TumblrException("tumblr - {}".format(str(e)))
 
     def reinit(self):
         self.read()
