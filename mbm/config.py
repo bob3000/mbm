@@ -78,6 +78,7 @@ class Config():
     def read(self):
         self.config.read(self.file_path)
 
+
 class Global(Config):
     """
     Manages global configurations and holds a dictionary of account objects.

@@ -33,8 +33,10 @@ class OAuth():
         oauth_headers['oauth_version'] = "1.0"
         oauth_headers['oauth_signature'] = signature(
             oauth_headers, request, self.consumer_secret, self.token_secret)
-        for k, v in oauth_headers.items():
-            request.add_header(k, v)
+        auth_header = ", ".join(['{}="{}"'.format(
+            k, urllib.parse.quote(v, safe=""))
+            for k, v in sorted(oauth_headers.items())])
+        request.add_header("Authorization", "OAuth " + auth_header)
         return request
 
     def authorize_user(self, request_token_url, authorize_url, access_url,
@@ -42,8 +44,7 @@ class OAuth():
         request = urllib.request.Request(request_token_url, data=b"",
                                          method="POST")
         oauth_headers = {}
-        oauth_headers['oauth_callback'] = urllib.parse.quote(oauth_callback,
-                                                             safe="")
+        oauth_headers['oauth_callback'] = oauth_callback
         oauth_headers['oauth_consumer_key'] = self.consumer_key
         oauth_headers['oauth_nonce'] = nonce()
         oauth_headers['oauth_signature_method'] = "HMAC-SHA1"
@@ -51,8 +52,11 @@ class OAuth():
         oauth_headers['oauth_version'] = "1.0"
         oauth_headers['oauth_signature'] = signature(
             oauth_headers, request, self.consumer_secret, "")
-        for k, v in oauth_headers.items():
-            request.add_header(k, v)
+
+        auth_header = ", ".join(['{}="{}"'.format(
+            k, urllib.parse.quote(v, safe=""))
+            for k, v in sorted(oauth_headers.items())])
+        request.add_header("Authorization", "OAuth " + auth_header)
         try:
             response = urllib.request.urlopen(request)
         except urllib.error.HTTPError as e:
@@ -91,16 +95,16 @@ def signature(oauth_headers, request, consumer_secret, token_secret):
         urllib.parse.urlparse(request.full_url)[4])
     body = urllib.parse.parse_qsl(request.data)
     headers = list(copy.deepcopy(oauth_headers).items())
-    headers_params_body = headers + url_params + body
-    params = ["=".join((urllib.parse.quote(k), urllib.parse.quote(v)))
-              for k, v in headers_params_body]
+    params = ["=".join((urllib.parse.quote(k, safe="~"),
+                        urllib.parse.quote(v, safe="~")))
+              for k, v in headers + url_params + body]
     params_str = "&".join(sorted(params))
     url = request.full_url.split("?").pop(0)
     sig_base_str = "&".join([request.get_method().upper(),
-                             urllib.parse.quote(url, safe=""),
-                             urllib.parse.quote(params_str, safe="")])
-    signing_key = "&".join([urllib.parse.quote(consumer_secret),
-                            urllib.parse.quote(token_secret)])
+                             urllib.parse.quote(url, safe="~"),
+                             urllib.parse.quote(params_str, safe="~")])
+    signing_key = "&".join([urllib.parse.quote(consumer_secret, safe="~"),
+                            urllib.parse.quote(token_secret, safe="~")])
     return base64.b64encode(
         hmac.new(signing_key.encode(), msg=sig_base_str.encode(),
                  digestmod=hashlib.sha1).digest()).decode()
