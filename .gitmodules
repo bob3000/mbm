@@ -1,0 +1,3 @@
+[submodule "token_procurer/ohmy-auth"]
+	path = token_procurer/ohmy-auth
+	url = https://github.com/sudocode/ohmy-auth.git
