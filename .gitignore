@@ -10,3 +10,4 @@ test_config/
 man/mbm.1.gz
 build/
 dist/
+token_procurer/vendor
