@@ -10,6 +10,7 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder ".", "/home/vagrant/mbm"
     config.vm.provision :puppet do |puppet|
       puppet.manifests_path = "puppet/manifests"
+      puppet.module_path = "puppet/modules"
       puppet.manifest_file = "mbm.pp"
     end
   end
