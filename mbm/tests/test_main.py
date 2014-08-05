@@ -29,6 +29,8 @@ class MainTestCase(unittest.TestCase):
         sys.exit = MagicMock()
         self.real_stderr = sys.stderr
         sys.stderr = MagicMock()
+        self.real_expnad_dir = mbm.config.expand_dir
+        mbm.config.expand_dir = lambda x: x
 
     def test_args_manage_account(self):
         account = shlex.split("account list myaccount")
@@ -148,7 +150,7 @@ class MainTestCase(unittest.TestCase):
                        'img_source': 'http://data'}))
         mbm.__main__.controller.post_photo.assert_has_calls(
             [call([], caption='caption', link='link', tags='tag1,tag2',
-                  data='/home/vagrant/mbm/mbm/tests/fixtures/blue.png'),
+                  data='mbm/tests/fixtures/blue.png'),
              call([], caption='caption', link='link', source='http://data',
                   tags='tag1,tag2')])
         with patch('mbm.__main__.controller.post_photo',
@@ -193,3 +195,4 @@ class MainTestCase(unittest.TestCase):
         mbm.controller = self.real_controller
         sys.exit = self.real_exit
         sys.stderr = self.real_stderr
+        mbm.config.expand_dir = self.real_expnad_dir
