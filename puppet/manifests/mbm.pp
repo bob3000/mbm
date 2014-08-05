@@ -10,14 +10,14 @@ Package {
 }
 
 class base {
-    include php
+    #include php  ## include php if you want to hack on token_procuer.php
     exec { "update":
         command => "apt-get update && touch /root/.updated",
         creates => "/root/.updated",
     }
 
     file { "/home/vagrant/.bash_login":
-        content => "export LC_ALL=C
+        content => "
         alias mbm='PYTHONPATH=/home/vagrant/mbm/ python3 -m mbm'
         cd /home/vagrant/mbm
         ",
