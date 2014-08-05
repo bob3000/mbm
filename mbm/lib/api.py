@@ -1,5 +1,7 @@
 import json
+import urllib.error
 import urllib.request
+import mbm.lib.oauth
 
 
 class Api():
@@ -41,12 +43,13 @@ class Api():
             data = urllib.parse.urlencode(sorted(list(post_data.items())))
             req = urllib.request.Request(
                 url, data=data.encode(), method="POST")
-            req = self.oauth.authorize_request(req)
-            res = urllib.request.urlopen(req, data=post_data)
         else:
             req = urllib.request.Request(url, method="GET")
+        try:
             req = self.oauth.authorize_request(req)
             res = urllib.request.urlopen(req)
+        except (urllib.error.HTTPError, mbm.lib.oauth.OAuthException) as e:
+            raise ApiException(e)
         return self._handle_response(res)
 
     def _url_from_method(self, params):

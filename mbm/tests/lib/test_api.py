@@ -1,6 +1,7 @@
 import unittest
 import urllib.request
 import mbm.lib.api
+import mbm.lib.oauth
 
 from unittest.mock import MagicMock
 
@@ -53,6 +54,13 @@ class ApiTestCase(unittest.TestCase):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")
         self.http_response.read = lambda: b'<html></html>'
         attrs = {'urlopen.return_value': self.http_response}
+        urllib.request.configure_mock(**attrs)
+        with self.assertRaises(mbm.lib.api.ApiException):
+            api.posts_queue(api_key="asdf98", some="value")
+
+    def test_http_error(self):
+        api = mbm.lib.api.Api(self.oauth, "http://some.url")
+        attrs = {'urlopen.side_effect': mbm.lib.oauth.OAuthException}
         urllib.request.configure_mock(**attrs)
         with self.assertRaises(mbm.lib.api.ApiException):
             api.posts_queue(api_key="asdf98", some="value")

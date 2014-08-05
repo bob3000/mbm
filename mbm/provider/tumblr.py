@@ -21,7 +21,7 @@ class Account(mbm.config.Account):
             self.global_conf.config['tumblr']['consumer_secret'],
             token=self.config['DEFAULT']['token'],
             token_secret=self.config['DEFAULT']['token_secret'])
-        base_url = "https://api.tumblr.com/v2/blog/{}".format(
+        base_url = "http://api.tumblr.com/v2/blog/{}.tumblr.com".format(
             self.config['DEFAULT']['username'])
         self.api = mbm.lib.api.Api(self.oauth, base_url)
         param_keys = ['request_url', 'authorize_url', 'access_url',
@@ -59,7 +59,10 @@ class Post(mbm.datatype.Post):
                           }
 
     def post(self):
-        res = self.account.api.post(post_data=self.post_data)
+        try:
+            res = self.account.api.post(post_data=self.post_data)
+        except mbm.lib.api.ApiException as e:
+            raise TumblrException(e)
         if res.code != 200:
             raise TumblrException(
                 "Tumblr API responded with code {}: {}".format(

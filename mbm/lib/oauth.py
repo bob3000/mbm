@@ -50,7 +50,7 @@ def signature(oauth_headers, request, consumer_secret, token_secret):
     """
     url_params = urllib.parse.parse_qsl(
         urllib.parse.urlparse(request.full_url)[4])
-    body = urllib.parse.parse_qsl(request.data)
+    body = urllib.parse.parse_qsl(request.data.decode())
     headers = list(copy.deepcopy(oauth_headers).items())
     params = ["=".join((urllib.parse.quote(k, safe="~"),
                         urllib.parse.quote(v, safe="~")))

@@ -118,16 +118,18 @@ def post_text(args):
     try:
         accounts = account_list(args)
         if not args.body:
-            body = sys.stdin.read()
+            input_stream = sys.stdin
         else:
-            with open(mbm.config.expand_dir(args.body), 'r') as f:
-                body = f.read()
+            input_stream = open(mbm.config.expand_dir(args.body), 'r')
+        body = input_stream.read()
+        input_stream.close()
         title = args.title
         if not title and args.extract_title:
             title = body.split("\n")[0]
             body = "\n".join(body.split("\n")[1:]).lstrip("\n")
         controller.post_text(accounts, title, body, args.tags)
-    except (RuntimeError, FileNotFoundError) as e:
+    except (RuntimeError, FileNotFoundError, UnicodeEncodeError,
+            UnicodeDecodeError) as e:
         print("Error:", str(e), file=sys.stderr)
         sys.exit(1)
 

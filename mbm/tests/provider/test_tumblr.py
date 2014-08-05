@@ -55,6 +55,9 @@ class TumblrTestCase(unittest.TestCase):
         self.account.api.post = MagicMock(return_value=self.error_api_response)
         with self.assertRaises(mbm.provider.tumblr.TumblrException):
             text.post()
+        self.account.api.post = MagicMock(side_effect=mbm.lib.api.ApiException)
+        with self.assertRaises(mbm.provider.tumblr.TumblrException):
+            text.post()
         self.account.api.post = MagicMock(return_value=self.api_response)
 
     def test_model_factory(self):

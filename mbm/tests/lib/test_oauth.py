@@ -43,8 +43,8 @@ class ApiTestCase(unittest.TestCase):
         fake_request.full_url = ("https://api.twitter.com/1/statuses/update"
                                  ".json?include_entities=true")
         fake_request.get_method = lambda: "POST"
-        fake_request.data = "status=" + urllib.parse.quote(
-            "Hello Ladies + Gentlemen, a signed OAuth request!")
+        fake_request.data = ("status=" + urllib.parse.quote(
+            "Hello Ladies + Gentlemen, a signed OAuth request!")).encode()
         auth = mbm.lib.oauth.OAuth(
             "xvz1evFS4wEEPTGEFPHBog",  # consumer key
             "kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw",  # consumer secret
