@@ -8,7 +8,8 @@ import urllib
 REQUEST_TOKEN_URL = "http://www.tumblr.com/oauth/request_token"
 AUTHORIZE_URL = "http://www.tumblr.com/oauth/authorize"
 ACCESS_URL = "http://www.tumblr.com/oauth/access_token"
-TOKEN_PROCURER_BASE_URL = "http://bob3000.lima-city.de/token_procurer.php"
+TOKEN_PROCURER_BASE_URL = ("http://bob3000.lima-city.de"
+                           "/oauth/token_procurer.php")
 
 
 class Account(mbm.config.Account):
@@ -23,10 +24,13 @@ class Account(mbm.config.Account):
         base_url = "https://api.tumblr.com/v2/blog/{}".format(
             self.config['DEFAULT']['username'])
         self.api = mbm.lib.api.Api(self.oauth, base_url)
-        params = [urllib.parse.quote(i) for i in [
+        param_keys = ['request_url', 'authorize_url', 'access_url',
+                      'consumer_key', 'consumer_secret']
+        params_vals = [urllib.parse.quote(i, safe="~") for i in [
             REQUEST_TOKEN_URL, AUTHORIZE_URL, ACCESS_URL,
             self.global_conf.config['tumblr']['consumer_key'],
             self.global_conf.config['tumblr']['consumer_secret']]]
+        params = ["=".join([k, v]) for k, v in zip(param_keys, params_vals)]
         self.token_procurer_url = TOKEN_PROCURER_BASE_URL+"?"+"&".join(params)
 
     def get_model(self, cls):

@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 import urllib.parse
+import webbrowser
 import mbm.controller
 import mbm.config
 
@@ -33,7 +34,7 @@ def parse_args(command_line):
     text_parser.add_argument("-t", "--tags", default="",
                              help="Coma separated list of tags")
     text_parser.add_argument("-e", "--extract-title", action="store_true",
-                             help="Treat first line of the post body ad the "
+                             help="Treat first line of the post body as the "
                              "post title")
     text_parser.add_argument("-f", "--title", default="", help="Title of post")
     text_parser.add_argument("-b", "--body", default="", help="Body of post")
@@ -100,7 +101,7 @@ def manage_account(args):
                     account.config['DEFAULT']['account_type']):
                 edit_conf(controller.global_conf.file_path)
                 account.reinit()
-            # CREDENTIALS
+            webbrowser.open_new(account.token_procurer_url)
             edit_conf(account.file_path)
         elif args.action == "delete":
             controller.global_conf.delete_account(args.name)

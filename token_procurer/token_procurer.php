@@ -2,10 +2,12 @@
 require_once __DIR__ . '/vendor/autoload.php';
 use ohmy\Auth1;
 
+
 $caller_url = parse_url("http".(!empty($_SERVER['HTTPS'])?"s":"").
     "://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);
 define('CALLBACK_URL',
     $caller_url['scheme']."://".$caller_url['host'].$caller_url['path']);
+
 
 # start a session to save oauth data in-between redirects
 session_start();
