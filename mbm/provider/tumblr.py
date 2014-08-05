@@ -2,13 +2,13 @@ import mbm.config
 import mbm.lib.api
 import mbm.lib.oauth
 import mbm.datatype
+import urllib
 
 
 REQUEST_TOKEN_URL = "http://www.tumblr.com/oauth/request_token"
 AUTHORIZE_URL = "http://www.tumblr.com/oauth/authorize"
 ACCESS_URL = "http://www.tumblr.com/oauth/access_token"
-OAUTH_CALLBACK = "http://bob3000.lima-city.de/token_procurer.php"
-REGISTER_REQ_TOKEN_URL = "http://bob3000.lima-city.de/token_procurer.php"
+TOKEN_PROCURER_BASE_URL = "http://bob3000.lima-city.de/token_procurer.php"
 
 
 class Account(mbm.config.Account):
@@ -23,6 +23,11 @@ class Account(mbm.config.Account):
         base_url = "https://api.tumblr.com/v2/blog/{}".format(
             self.config['DEFAULT']['username'])
         self.api = mbm.lib.api.Api(self.oauth, base_url)
+        params = [urllib.parse.quote(i) for i in [
+            REQUEST_TOKEN_URL, AUTHORIZE_URL, ACCESS_URL,
+            self.global_conf.config['tumblr']['consumer_key'],
+            self.global_conf.config['tumblr']['consumer_secret']]]
+        self.token_procurer_url = TOKEN_PROCURER_BASE_URL+"?"+"&".join(params)
 
     def get_model(self, cls):
         """
@@ -34,14 +39,6 @@ class Account(mbm.config.Account):
         except KeyError:
             raise mbm.config.AccountException(
                 "Data model {} does not exist".format(cls))
-
-    def procure_oauth_credentials(self):
-        try:
-            self.oauth.authorize_user(REQUEST_TOKEN_URL, AUTHORIZE_URL,
-                                      ACCESS_URL, OAUTH_CALLBACK,
-                                      REGISTER_REQ_TOKEN_URL)
-        except mbm.lib.oauth.OAuthException as e:
-            raise TumblrException("tumblr - {}".format(str(e)))
 
     def reinit(self):
         self.read()

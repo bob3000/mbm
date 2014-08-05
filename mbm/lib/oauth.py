@@ -6,7 +6,6 @@ import os
 import re
 import time
 import urllib
-import webbrowser
 
 
 class OAuth():
@@ -39,54 +38,6 @@ class OAuth():
             for k, v in sorted(oauth_headers.items())])
         request.add_header("Authorization", "OAuth " + auth_header)
         return request
-
-    def authorize_user(self, request_token_url, authorize_url, access_url,
-                       oauth_callback, register_req_token_url):
-        request = urllib.request.Request(request_token_url, data=b"",
-                                         method="POST")
-        oauth_headers = {}
-        oauth_headers['oauth_callback'] = oauth_callback
-        oauth_headers['oauth_consumer_key'] = self.consumer_key
-        oauth_headers['oauth_nonce'] = nonce()
-        oauth_headers['oauth_signature_method'] = "HMAC-SHA1"
-        oauth_headers['oauth_timestamp'] = str(int(time.time()))
-        oauth_headers['oauth_version'] = "1.0"
-        oauth_headers['oauth_signature'] = signature(
-            oauth_headers, request, self.consumer_secret, "")
-
-        auth_header = ", ".join(['{}="{}"'.format(
-            k, urllib.parse.quote(v, safe=""))
-            for k, v in sorted(oauth_headers.items())])
-        request.add_header("Authorization", "OAuth " + auth_header)
-        try:
-            response = urllib.request.urlopen(request)
-        except urllib.error.HTTPError as e:
-            raise(OAuthException(e))
-        if response.getcode() != 200:
-            raise OAuthException("Api responded with code {} while obtaning"
-                                 " request token. Reason: "
-                                 "{}".format(response.getcode(),
-                                             response.reason))
-        body = dict(urllib.parse.parse_qsl(response.read().decode(),
-                                           strict_parsing=True))
-        if body.get("oauth_callback_confirmed") != "true":
-            raise OAuthException("Api responded with "
-                                 "oauth_callback_confirmed = {}".format(
-                                     body.get("oauth_callback_confirmed")))
-        data = urllib.parse.urlencode(
-            {'oauth_token': body['oauth_token'],
-             'oauth_token_secret': body['oauth_token_secret'],
-             'access_url': access_url,
-             })
-        try:
-            urllib.request.urlopen(register_req_token_url, data=data.encode())
-        except urllib.error.HTTPError as e:
-            raise(OAuthException("Could not register request token. Call to "
-                                 "URL '{}' was responded with: {}".format(
-                                     register_req_token_url, str(e))))
-        authorize_url = "?".join([authorize_url,
-                                 "oauth_token=" + body['oauth_token']])
-        webbrowser.open_new(authorize_url)
 
 
 def nonce():

@@ -196,10 +196,6 @@ class Account(Config, abc.ABC):
     def get_model(self, cls):
         raise NotImplementedError  # pragma: nocover
 
-    @abc.abstractmethod
-    def procure_oauth_credentials(self):
-        raise NotImplementedError  # pragma: nocover
-
 
 class AccountException(Exception):
     pass

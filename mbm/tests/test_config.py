@@ -14,7 +14,6 @@ class GlobalConfigTestCase(unittest.TestCase):
         mbm.provider.tumblr.Account = type(
             "Account", (mbm.config.Account,),
             {'get_model': lambda: "model",
-             'procure_oauth_credentials': lambda: "credentials",
              })
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.conf_file = os.path.join(self.tmp_dir.name, 'test_config.ini')

@@ -16,16 +16,22 @@ class TumblrTestCase(unittest.TestCase):
         mbm.lib.api.Api = MagicMock()
 
         self.tmp_dir = tempfile.TemporaryDirectory()
-        self.tmp_file = os.path.join(self.tmp_dir.name, "tumblr.ini")
         cfg_parser = configparser.ConfigParser()
+        self.conf_file = os.path.join(self.tmp_dir.name, "tumblr.ini")
         cfg_parser.read_dict({'DEFAULT': {'username': 'tmblr_user',
                                           'account_type': 'tumblr',
                                           'token': '123token456',
                                           'token_secret': '123token_secret456',
                                           },
                               })
-        with open(self.tmp_file, 'w') as conf:
+        with open(self.conf_file, 'w') as conf:
             cfg_parser.write(conf)
+
+        cfg_parser.read_dict({'tumblr': {'consumer_key': 'CONSUMER_KEY',
+                                         'consumer_secret': 'CONSUMER_SECRET',
+                                         },
+                              })
+        global_conf = MagicMock(**{'config': cfg_parser})
 
         attrs_success = {'code': 200,
                          'payload.return_value': '\{"body": "todo bien"\}'}
@@ -36,7 +42,7 @@ class TumblrTestCase(unittest.TestCase):
         self.error_api_response = MagicMock()
         self.error_api_response.configure_mock(**attrs_error)
         self.account = mbm.provider.tumblr.Account(
-            MagicMock(), self.tmp_file, "tumblr")
+            global_conf, self.conf_file, "tumblr")
         self.account.api.post = MagicMock(return_value=self.api_response)
 
     def test_text(self):

@@ -100,7 +100,7 @@ def manage_account(args):
                     account.config['DEFAULT']['account_type']):
                 edit_conf(controller.global_conf.file_path)
                 account.reinit()
-            account.procure_oauth_credentials()
+            # CREDENTIALS
             edit_conf(account.file_path)
         elif args.action == "delete":
             controller.global_conf.delete_account(args.name)
