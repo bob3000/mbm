@@ -140,7 +140,7 @@ class MainTestCase(unittest.TestCase):
             namespace({'accounts': 'acc1,acc2',
                        'caption': 'caption',
                        'link': 'link', 'tags': 'tag1,tag2',
-                       'img_source': 'mbm/tests/fixtures/a_post'}))
+                       'img_source': 'mbm/tests/fixtures/blue.png'}))
         mbm.__main__.post_photo(
             namespace({'accounts': 'acc1,acc2',
                        'caption': 'caption',
@@ -148,8 +148,7 @@ class MainTestCase(unittest.TestCase):
                        'img_source': 'http://data'}))
         mbm.__main__.controller.post_photo.assert_has_calls(
             [call([], caption='caption', link='link', tags='tag1,tag2',
-                  data=['this%20is%20a%20title%0A%0Athis%20is%0Athe%20text%20'
-                        'body%0A']),
+                  data='/home/vagrant/mbm/mbm/tests/fixtures/blue.png'),
              call([], caption='caption', link='link', source='http://data',
                   tags='tag1,tag2')])
         with patch('mbm.__main__.controller.post_photo',
@@ -159,7 +158,7 @@ class MainTestCase(unittest.TestCase):
                            'caption': 'caption',
                            'link': 'link',
                            'tags': 'tag1,tag2',
-                           'img_source': 'mbm/tests/fixtures/a_post'}))
+                           'img_source': 'mbm/tests/fixtures/blue.png'}))
             sys.exit.assert_called_with(1)
         mbm.__main__.controller.mock_reset()
 

@@ -69,7 +69,8 @@ class TumblrTestCase(unittest.TestCase):
     def test_photo(self):
         with self.assertRaises(mbm.provider.tumblr.TumblrException):
             mbm.provider.tumblr.Photo(self.account, "caption", "link", "tags",
-                                      source="source", data="data",)
+                                      source="source",
+                                      data="mbm/tests/fixtures/blue.png",)
         with self.assertRaises(mbm.provider.tumblr.TumblrException):
             mbm.provider.tumblr.Photo(self.account, "caption", "link", "tags")
         photo = mbm.provider.tumblr.Photo(self.account, "caption", "link",
@@ -80,12 +81,15 @@ class TumblrTestCase(unittest.TestCase):
                        'source': 'source', 'caption': 'caption',
                        'link': 'link'})
         photo = mbm.provider.tumblr.Photo(self.account, "caption", "link",
-                                          "tags", data="data")
+                                          "tags",
+                                          data="mbm/tests/fixtures/blue.png")
         photo.post()
         self.account.api.post.assert_called_with(
-            post_data={'type': 'photo', 'tags': 'tags',
-                       'data': 'data', 'caption': 'caption',
-                       'link': 'link'})
+            post_data={
+                'type': 'photo', 'tags': 'tags',
+                'data': 'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAAFElE'
+                        'QVQImWN0a9rCgASYGFABqXwAdToBhhgbeJgAAAAASUVORK5CYII=',
+                'caption': 'caption', 'link': 'link'})
         self.account.api.post = MagicMock(return_value=self.error_api_response)
         with self.assertRaises(mbm.provider.tumblr.TumblrException):
             photo.post()

@@ -40,7 +40,8 @@ class Api():
         params = {k: v for k, v in kwargs.items() if k != "post_data"}
         url = self._url_from_method(params)
         if post_data:
-            data = urllib.parse.urlencode(sorted(list(post_data.items())))
+            data = "&".join(["=".join([k, urllib.parse.quote(v, safe='~')])
+                             for k, v in sorted(list(post_data.items()))])
             req = urllib.request.Request(
                 url, data=data.encode(), method="POST")
         else:

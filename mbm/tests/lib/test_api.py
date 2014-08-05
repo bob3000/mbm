@@ -39,7 +39,7 @@ class ApiTestCase(unittest.TestCase):
                   post_data={"type": "text", "title": "My new bike"})
         urllib.request.Request.assert_called_with(
             'http://some.url/posts?api_key=asdf98',
-            data=b'title=My+new+bike&type=text', method='POST')
+            data=b'title=My%20new%20bike&type=text', method='POST')
 
     def test_wrong_content_type(self):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")

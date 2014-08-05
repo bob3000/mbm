@@ -140,9 +140,7 @@ def post_photo(args):
         kwargs = dict(caption=args.caption, link=args.link,
                       tags=args.tags, source=args.img_source)
     else:
-        img_source = []
-        with open(mbm.config.expand_dir(args.img_source), 'r') as f:
-            img_source.append(urllib.parse.quote(f.read()))
+        img_source = mbm.config.expand_dir(args.img_source)
         kwargs = dict(caption=args.caption, link=args.link,
                       tags=args.tags, data=img_source)
     try:

@@ -131,7 +131,7 @@ Next we will reconficure the mocked response so it will bring up an error.
 The last argument of the command line is the source which can either be an url
 or a filename.
 
-    >>> sh("mbm post photo --account=myaccount mbm/tests/fixtures/a_post")
+    >>> sh("mbm post photo --account=myaccount mbm/tests/fixtures/blue.png")
     Error: Tumblr API responded with code 404: ...
 
 Make the fake response return something positive again.
@@ -139,7 +139,7 @@ Make the fake response return something positive again.
     >>> fake_response_methods.update({"getcode.return_value": 200})
     >>> fake_response.configure_mock(**fake_response_methods)
 
-    >>> sh("mbm post photo --account=myaccount mbm/tests/fixtures/a_post")
+    >>> sh("mbm post photo --account=myaccount mbm/tests/fixtures/blue.png")
     >>> sh("mbm post photo --account=myaccount --caption=caption --link=link "
     ...    "--tags=tag1,tag2 http://www.some.url.net")
 

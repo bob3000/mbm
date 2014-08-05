@@ -1,8 +1,9 @@
+import base64
+import urllib
 import mbm.config
 import mbm.lib.api
 import mbm.lib.oauth
 import mbm.datatype
-import urllib
 
 
 REQUEST_TOKEN_URL = "http://www.tumblr.com/oauth/request_token"
@@ -90,7 +91,9 @@ class Photo(Post):
         if source:
             self.update_data({'source': source})
         else:
-            self.update_data({'data': data})
+            with open(data, 'rb') as f:
+                photo = base64.b64encode(f.read())
+            self.update_data({'data': photo.decode()})
 
 
 class TumblrException(mbm.datatype.ProviderException):
