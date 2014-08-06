@@ -196,6 +196,11 @@ class Account(Config, abc.ABC):
     def get_model(self, cls):
         raise NotImplementedError  # pragma: nocover
 
+    @property
+    @abc.abstractmethod
+    def token_procurer_url(self):
+        raise NotImplementedError  # pragma: nocover
+
 
 class AccountException(Exception):
     pass

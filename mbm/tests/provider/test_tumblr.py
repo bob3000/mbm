@@ -66,6 +66,12 @@ class TumblrTestCase(unittest.TestCase):
         self.assertIs(self.account.get_model("Text"),
                       mbm.provider.tumblr.Text)
 
+    def test_token_procurer_url(self):
+        self.assertEqual(self.account.token_procurer_url,
+                         'http://bob3000.lima-city.de/oauth/token_procurer.'
+                         'php?account_type=tumblr&consumer_key=CONSUMER_KEY'
+                         '&consumer_secret=CONSUMER_SECRET')
+
     def test_photo(self):
         with self.assertRaises(mbm.provider.tumblr.TumblrException):
             mbm.provider.tumblr.Photo(self.account, "caption", "link", "tags",
