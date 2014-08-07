@@ -2,6 +2,7 @@ import unittest
 import configparser
 import os.path
 import tempfile
+import uuid
 import mbm.provider.twitter
 import mbm.lib.api
 import mbm.config
@@ -43,22 +44,31 @@ class twitterTestCase(unittest.TestCase):
         self.error_api_response.configure_mock(**attrs_error)
         self.account = mbm.provider.twitter.Account(
             global_conf, self.conf_file, "twitter")
-        self.account.api.post = MagicMock(return_value=self.api_response)
+        self.account.api.statuses.update_with_media = \
+            MagicMock(return_value=self.api_response)
+        self.account.api.statuses.update = \
+            MagicMock(return_value=self.api_response)
+        self.real_uuid4 = uuid.uuid4
+        uuid.uuid4 = MagicMock(
+            return_value='b9b52cfc-fa00-4053-b872-7284272b932d')
 
     def test_text(self):
         text = mbm.provider.twitter.Text(
             self.account, "title", "body text", "tag1 tag2")
         text.post()
-        self.account.api.post.assert_called_with(
+        self.account.api.statuses.update_with_media(
             post_data={'title': 'title', 'body': 'body text',
                        'type': 'text', 'tags': 'tag1 tag2'})
-        self.account.api.post = MagicMock(return_value=self.error_api_response)
+        self.account.api.statuses.update = \
+            MagicMock(return_value=self.error_api_response)
         with self.assertRaises(mbm.provider.twitter.TwitterException):
             text.post()
-        self.account.api.post = MagicMock(side_effect=mbm.lib.api.ApiException)
+        self.account.api.statuses.update = \
+            MagicMock(side_effect=mbm.lib.api.ApiException)
         with self.assertRaises(mbm.provider.twitter.TwitterException):
             text.post()
-        self.account.api.post = MagicMock(return_value=self.api_response)
+        self.account.api.statuses.update = \
+            MagicMock(return_value=self.api_response)
 
     def test_model_factory(self):
         with self.assertRaises(mbm.config.AccountException):
@@ -74,33 +84,49 @@ class twitterTestCase(unittest.TestCase):
 
     def test_photo(self):
         with self.assertRaises(mbm.provider.twitter.TwitterException):
-            mbm.provider.twitter.Photo(self.account, "caption", "link", "tags",
-                                       source="source",
-                                       data="mbm/tests/fixtures/blue.png",)
-        with self.assertRaises(mbm.provider.twitter.TwitterException):
             mbm.provider.twitter.Photo(self.account, "caption", "link", "tags")
-        photo = mbm.provider.twitter.Photo(self.account, "caption", "link",
-                                           "tags", source="source")
+        photo = mbm.provider.twitter.Photo(
+            self.account, "caption", "link", "tags",
+            data="mbm/tests/fixtures/blue.png")
         photo.post()
-        self.account.api.post.assert_called_with(
-            post_data={'type': 'photo', 'tags': 'tags',
-                       'source': 'source', 'caption': 'caption',
-                       'link': 'link'})
+        self.account.api.statuses.update_with_media.assert_called_with(
+            http_headers={'Accept-Encoding': 'gzip', 'Content-Type': 'multipar'
+                          't/form-data; boundary=#=#Micro-Bog-Magic#=#b9b52cfc'
+                          '-fa00-4053-b872-7284272b932d'},
+            post_data='--#=#Micro-Bog-Magic#=#b9b52cfc-fa00-4053-b872-7284272b'
+            '932d\r\nContent-Disposition: form-data; name="media[]"\r\nContent'
+            '-Transfer-Encoding: base64\r\n\r\niVBORw0KGgoAAAANSUhEUgAAAAUAAAA'
+            'FCAIAAAACDbGyAAAAFElEQVQImWN0a9rCgASYGFABqXwAdToBhhgbeJgAAAAASUVO'
+            'RK5CYII=\r\n--#=#Micro-Bog-Magic#=#b9b52cfc-fa00-4053-b872-728427'
+            '2b932d\r\nContent-Disposition: form-data; name="status"\r\n\r\nca'
+            'ption\r\n--#=#Micro-Bog-Magic#=#b9b52cfc-fa00-4053-b872-7284272b9'
+            '32d--'
+            )
         photo = mbm.provider.twitter.Photo(self.account, "caption", "link",
                                            "tags",
                                            data="mbm/tests/fixtures/blue.png")
         photo.post()
-        self.account.api.post.assert_called_with(
-            post_data={
-                'type': 'photo', 'tags': 'tags',
-                'data': 'iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAAFElE'
-                        'QVQImWN0a9rCgASYGFABqXwAdToBhhgbeJgAAAAASUVORK5CYII=',
-                'caption': 'caption', 'link': 'link'})
-        self.account.api.post = MagicMock(return_value=self.error_api_response)
+        self.account.api.statuses.update_with_media.assert_called_with(
+            http_headers={'Accept-Encoding': 'gzip', 'Content-Type': 'multipar'
+                          't/form-data; boundary=#=#Micro-Bog-Magic#=#b9b52cfc'
+                          '-fa00-4053-b872-7284272b932d'},
+            post_data='--#=#Micro-Bog-Magic#=#b9b52cfc-fa00-4053-b872-7284272b'
+            '932d\r\nContent-Disposition: form-data; name="media[]"\r\nContent'
+            '-Transfer-Encoding: base64\r\n\r\niVBORw0KGgoAAAANSUhEUgAAAAUAAAA'
+            'FCAIAAAACDbGyAAAAFElEQVQImWN0a9rCgASYGFABqXwAdToBhhgbeJgAAAAASUVO'
+            'RK5CYII=\r\n--#=#Micro-Bog-Magic#=#b9b52cfc-fa00-4053-b872-728427'
+            '2b932d\r\nContent-Disposition: form-data; name="status"\r\n\r\nca'
+            'ption\r\n--#=#Micro-Bog-Magic#=#b9b52cfc-fa00-4053-b872-7284272b9'
+            '32d--'
+        )
+        self.account.api.statuses.update_with_media = \
+            MagicMock(return_value=self.error_api_response)
         with self.assertRaises(mbm.provider.twitter.TwitterException):
             photo.post()
-        self.account.api.post = MagicMock(return_value=self.api_response)
+        self.account.api.statuses.update = \
+            MagicMock(return_value=self.api_response)
 
     def tearDown(self):
         mbm.lib.api.Api = self.real_api
         self.tmp_dir.cleanup()
+        uuid.uuid4 = self.real_uuid4

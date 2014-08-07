@@ -1,3 +1,4 @@
+import gzip
 import json
 import urllib.error
 import urllib.request
@@ -31,32 +32,37 @@ class Api():
         self.base_url = base_url
         self.url_suffix = url_suffix
         self.oauth = oauth
+        self.current_route = ""
 
     def __getattr__(self, name):
-        self.current_route = name.replace("_", "/")
+        self.current_route += "/" + name
         return self
 
-    def __call__(self, *args, **kwargs):
-        post_data = kwargs["post_data"] if "post_data" in kwargs else ""
-        params = {k: v for k, v in kwargs.items() if k != "post_data"}
+    def __call__(self, post_data="", http_headers="", **kwargs):
+        post_data = post_data or {}
+        headers = http_headers or {}
+        exclude = ["post_data", "headers"]
+        params = {k: v for k, v in kwargs.items() if k not in exclude}
         url = self._url_from_method(params)
         if post_data:
-            data = "&".join(["=".join([k, urllib.parse.quote(v, safe='~')])
-                             for k, v in sorted(list(post_data.items()))])
             req = urllib.request.Request(
-                url, data=data.encode(), method="POST")
+                url, headers=headers, data=post_data.encode(), method="POST")
         else:
-            req = urllib.request.Request(url, method="GET")
+            req = urllib.request.Request(url, headers=http_headers,
+                                         method="GET")
         try:
-            req = self.oauth.authorize_request(req)
+            exclude_params = ('multipart/form-data' in
+                              headers.get('Content-Type', ""))
+            req = self.oauth.authorize_request(
+                req, exclude_params=exclude_params)
             res = urllib.request.urlopen(req)
         except (urllib.error.HTTPError, mbm.lib.oauth.OAuthException) as e:
             raise ApiException(e)
+        self.current_route = ""
         return self._handle_response(res)
 
     def _url_from_method(self, params):
-        url = ("/".join([self.base_url.rstrip("/"), self.current_route]) +
-               self.url_suffix)
+        url = self.base_url.rstrip("/") + self.current_route + self.url_suffix
         if params:
             params = sorted(["=".join(map(str, e)) for e in params.items()])
             params = "&".join(params)
@@ -68,7 +74,10 @@ class Api():
         if ('application/json' not in headers.get('content-type', "")):
             raise ApiException("content-type is not application/json")
         try:
-            data = json.loads(res.read().decode())
+            try:
+                data = json.loads(gzip.decompress(res.read()).decode())
+            except OSError:  # response seems not to be gzipped
+                data = json.loads(res.read().decode())
         except (TypeError, ValueError):
             raise ApiException("payload is not valid json")
         return ApiResponse(data, res.getcode())

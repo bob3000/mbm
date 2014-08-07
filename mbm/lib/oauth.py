@@ -20,7 +20,7 @@ class OAuth():
         self.token = token
         self.token_secret = token_secret
 
-    def authorize_request(self, request):
+    def authorize_request(self, request, exclude_params=False):
         """
         Takes a request and returns it with the necessary OAuth headers
         """
@@ -32,9 +32,10 @@ class OAuth():
         oauth_headers['oauth_token'] = self.token
         oauth_headers['oauth_version'] = "1.0"
         oauth_headers['oauth_signature'] = signature(
-            oauth_headers, request, self.consumer_secret, self.token_secret)
+            oauth_headers, request, self.consumer_secret, self.token_secret,
+            exclude_params)
         auth_header = ", ".join(['{}="{}"'.format(
-            k, urllib.parse.quote(v, safe=""))
+            k, urllib.parse.quote(v, safe="~"))
             for k, v in sorted(oauth_headers.items())])
         request.add_header("Authorization", "OAuth " + auth_header)
         return request
@@ -44,17 +45,24 @@ def nonce():
     return re.sub(r"\W", "", base64.b64encode(os.urandom(32)).decode())
 
 
-def signature(oauth_headers, request, consumer_secret, token_secret):
+def signature(oauth_headers, request,
+              consumer_secret, token_secret, exclude_params=False):
     """
     TODO: Enable `strict_parsing=True` in parse_qsl and fix tests
     """
     url_params = urllib.parse.parse_qsl(
         urllib.parse.urlparse(request.full_url)[4])
-    body = urllib.parse.parse_qsl(request.data.decode())
+    body = ([] if request.get_method() != "POST" else
+            urllib.parse.parse_qsl(request.data.decode()))
     headers = list(copy.deepcopy(oauth_headers).items())
-    params = ["=".join((urllib.parse.quote(k, safe="~"),
-                        urllib.parse.quote(v, safe="~")))
-              for k, v in headers + url_params + body]
+    if exclude_params:
+        params = ["=".join((urllib.parse.quote(k, safe="~"),
+                            urllib.parse.quote(v, safe="~")))
+                  for k, v in headers]
+    else:
+        params = ["=".join((urllib.parse.quote(k, safe="~"),
+                            urllib.parse.quote(v, safe="~")))
+                  for k, v in headers + url_params + body]
     params_str = "&".join(sorted(params))
     url = request.full_url.split("?").pop(0)
     sig_base_str = "&".join([request.get_method().upper(),

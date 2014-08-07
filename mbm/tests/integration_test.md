@@ -140,6 +140,4 @@ Make the fake response return something positive again.
     >>> fake_response.configure_mock(**fake_response_methods)
 
     >>> sh("mbm post photo --account=myaccount mbm/tests/fixtures/blue.png")
-    >>> sh("mbm post photo --account=myaccount --caption=caption --link=link "
-    ...    "--tags=tag1,tag2 http://www.some.url.net")
 

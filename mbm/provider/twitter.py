@@ -47,15 +47,17 @@ class Account(mbm.config.Account):
 
 class Post(mbm.datatype.Post):
 
-    def __init__(self, account, post_type, tags):
-        self.account = account
-        self.post_data = {'type': post_type,
-                          'tags': tags,
-                          }
+    def __init__(self, account):
+        super().__init__(account)
 
     def post(self):
         try:
-            res = self.account.api.post(post_data=self.post_data)
+            if 'media[]' in self.post_data:
+                res = self.account.api.statuses.update_with_media(
+                    post_data=self.payload, http_headers=self.http_headers)
+            else:
+                res = self.account.api.statuses.update(
+                    post_data=self.payload, http_headers=self.http_headers)
         except mbm.lib.api.ApiException as e:
             raise TwitterException(e)
         if res.code != 200:
@@ -67,27 +69,24 @@ class Post(mbm.datatype.Post):
 class Text(Post):
 
     def __init__(self, account, title, body, tags):
-        super().__init__(account, "text", tags)
-        self.update_data({'title': title,
-                          'body': body,
+        super().__init__(account)
+        self.update_data({'status': body,
                           })
+        self.x_www_form_payload()
 
 
 class Photo(Post):
 
     def __init__(self, account, caption, link, tags, data="", source=""):
-        if all((source, data)) or not any((source, data)):
-            raise TwitterException("Either 'source' or 'data' must be present")
-        super().__init__(account, "photo", tags)
-        self.update_data({'caption': caption,
-                          'link': link,
-                          })
-        if source:
-            self.update_data({'source': source})
-        else:
-            with open(data, 'rb') as f:
-                photo = base64.b64encode(f.read())
-            self.update_data({'data': photo.decode()})
+        if not data:
+            raise TwitterException("No valid path to media file provided")
+        super().__init__(account)
+        with open(data, 'rb') as f:
+            photo = base64.b64encode(f.read()).decode()
+        self.update_data({'media[]': photo})
+        if caption:
+            self.update_data({'status': caption})
+        self.multipart_payload(b64_keys=['media[]'])
 
 
 class TwitterException(mbm.datatype.ProviderException):
