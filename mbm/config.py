@@ -103,7 +103,7 @@ class Global(Config):
 
 # TODO: The default for account_type has to be changed to None as soon as
 # other types exist
-    def create_account(self, name, account_type='tumblr'):
+    def create_account(self, name, account_type='twitter'):
         if name in self.accounts:
             raise AccountException("Account {} already "
                                    "exists".format(name))
@@ -172,7 +172,7 @@ class Account(Config, abc.ABC):
     """
 
     DEFAULT_CONFIG = {'username': '',
-                      'account_type': 'tumblr',
+                      'account_type': 'twitter',
                       'token': '',
                       'token_secret': '',
                       }
@@ -191,6 +191,11 @@ class Account(Config, abc.ABC):
             global_conf.config.set(self.config['DEFAULT']['account_type'],
                                    "consumer_secret", "")
             self.global_conf.write()
+
+    def reinit(self):
+        self.read()
+        self.global_conf.read()
+        self.__init__(self.global_conf, self.file_path, self.name)
 
     @abc.abstractmethod
     def get_model(self, cls):

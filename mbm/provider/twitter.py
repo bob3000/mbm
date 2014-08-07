@@ -15,13 +15,13 @@ class Account(mbm.config.Account):
     def __init__(self, global_conf, file_path, name):
         super().__init__(global_conf, file_path, name)
         self.oauth = mbm.lib.oauth.OAuth(
-            self.global_conf.config['tumblr']['consumer_key'],
-            self.global_conf.config['tumblr']['consumer_secret'],
+            self.global_conf.config['twitter']['consumer_key'],
+            self.global_conf.config['twitter']['consumer_secret'],
             token=self.config['DEFAULT']['token'],
             token_secret=self.config['DEFAULT']['token_secret'])
-        base_url = "http://api.tumblr.com/v2/blog/{}.tumblr.com".format(
-            self.config['DEFAULT']['username'])
-        self.api = mbm.lib.api.Api(self.oauth, base_url)
+        base_url = "https://api.twitter.com/1.1/"
+        url_suffix = ".json"
+        self.api = mbm.lib.api.Api(self.oauth, base_url, url_suffix=url_suffix)
 
     def get_model(self, cls):
         """
@@ -39,8 +39,8 @@ class Account(mbm.config.Account):
         param_keys = ['account_type', 'consumer_key', 'consumer_secret']
         params_vals = [urllib.parse.quote(i, safe="~") for i in [
             self.config['DEFAULT']['account_type'],
-            self.global_conf.config['tumblr']['consumer_key'],
-            self.global_conf.config['tumblr']['consumer_secret']]]
+            self.global_conf.config['twitter']['consumer_key'],
+            self.global_conf.config['twitter']['consumer_secret']]]
         params = ["=".join([k, v]) for k, v in zip(param_keys, params_vals)]
         return TOKEN_PROCURER_BASE_URL+"?"+"&".join(params)
 
@@ -57,10 +57,10 @@ class Post(mbm.datatype.Post):
         try:
             res = self.account.api.post(post_data=self.post_data)
         except mbm.lib.api.ApiException as e:
-            raise TumblrException(e)
+            raise TwitterException(e)
         if res.code != 200:
-            raise TumblrException(
-                "Tumblr API responded with code {}: {}".format(
+            raise TwitterException(
+                "Twitter API responded with code {}: {}".format(
                     res.code, res.payload))
 
 
@@ -77,7 +77,7 @@ class Photo(Post):
 
     def __init__(self, account, caption, link, tags, data="", source=""):
         if all((source, data)) or not any((source, data)):
-            raise TumblrException("Either 'source' or 'data' must be present")
+            raise TwitterException("Either 'source' or 'data' must be present")
         super().__init__(account, "photo", tags)
         self.update_data({'caption': caption,
                           'link': link,
@@ -90,5 +90,5 @@ class Photo(Post):
             self.update_data({'data': photo.decode()})
 
 
-class TumblrException(mbm.datatype.ProviderException):
+class TwitterException(mbm.datatype.ProviderException):
     pass

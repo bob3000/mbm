@@ -58,19 +58,21 @@ $access = Auth1::legs(3)
 # test GET method
 $access->GET($_SESSION['mbm']['test_url'])
        ->then(function($response) {
-          $data = $response->json();
-          if ($data['meta']['status'] !== 200) {
-              print '<strong>';;
-              print $data['meta']['status'].' '.$data['meta']['msg']."<br>\n";
-              print '</strong>';
-              print "<p>Check consumer credentials</p><br>\n";
-              print "<pre>\n";
-              print $_SESSION['mbm']['consumer_key']."\n";
-              print $_SESSION['mbm']['consumer_secret']."\n";
-              print "</pre>\n";
-              die();
-          }
-          return $data;
+           $data = $response->json();
+           if  (property_exists($response->headers) &&
+               $response->headers['status'] == '200 OK' ||
+               isset($data['meta']) && $data['meta']['status'] != '200') {
+                   print '<strong>';;
+                   print $data['meta']['status'].' '.$data['meta']['msg']."<br>\n";
+                   print '</strong>';
+                   print "<p>Check consumer credentials</p><br>\n";
+                   print "<pre>\n";
+                   print $_SESSION['mbm']['consumer_key']."\n";
+                   print $_SESSION['mbm']['consumer_secret']."\n";
+                   print "</pre>\n";
+                   die();
+               }
+           return $data;
        })
        ->then(function($data) use($access){
               print "<pre>\n";

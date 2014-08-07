@@ -124,7 +124,7 @@ Next we will reconficure the mocked response so it will bring up an error.
 
     >>> sh("mbm post text --account=myaccount --title='a title' "
     ...    "--body='mbm/tests/fixtures/a_post'")
-    Error: Tumblr API responded with code 404: ...
+    Error: Twitter API responded with code 404: ...
 
 ### picture posting
 
@@ -132,7 +132,7 @@ The last argument of the command line is the source which can either be an url
 or a filename.
 
     >>> sh("mbm post photo --account=myaccount mbm/tests/fixtures/blue.png")
-    Error: Tumblr API responded with code 404: ...
+    Error: Twitter API responded with code 404: ...
 
 Make the fake response return something positive again.
 

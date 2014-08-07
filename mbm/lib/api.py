@@ -27,8 +27,9 @@ class Api():
     <ApiResponse ...>
     """
 
-    def __init__(self, oauth, base_url):
+    def __init__(self, oauth, base_url, url_suffix=""):
         self.base_url = base_url
+        self.url_suffix = url_suffix
         self.oauth = oauth
 
     def __getattr__(self, name):
@@ -54,7 +55,8 @@ class Api():
         return self._handle_response(res)
 
     def _url_from_method(self, params):
-        url = "/".join([self.base_url.rstrip("/"), self.current_route])
+        url = ("/".join([self.base_url.rstrip("/"), self.current_route]) +
+               self.url_suffix)
         if params:
             params = sorted(["=".join(map(str, e)) for e in params.items()])
             params = "&".join(params)
