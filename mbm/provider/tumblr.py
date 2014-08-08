@@ -13,7 +13,7 @@ TOKEN_PROCURER_BASE_URL = ("http://bob3000.lima-city.de"
 class Account(mbm.config.Account):
 
     def __init__(self, global_conf, file_path, name):
-        super().__init__(global_conf, file_path, name)
+        super().__init__(global_conf, file_path, name, 'tumblr')
         self.oauth = mbm.lib.oauth.OAuth(
             self.global_conf.config['tumblr']['consumer_key'],
             self.global_conf.config['tumblr']['consumer_secret'],

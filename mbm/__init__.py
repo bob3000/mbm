@@ -16,6 +16,8 @@ def load_tests(loader, tests, pattern):
             stdout, stderr = sys.stdout, sys.stderr
             import webbrowser
             webbrowser.open_new = MagicMock()
+            import mbm.config
+            mbm.config.log = MagicMock()
             sys.stdout, sys.stderr = io.StringIO(), io.StringIO()
             _main(shlex.split(a)[1:])
         except SystemExit:  # pragma: no cover

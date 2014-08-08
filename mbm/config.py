@@ -5,6 +5,7 @@ A class hierarchy implementing persistent configurations
 import abc
 import configparser
 import importlib
+import logging
 import os
 import os.path
 
@@ -13,6 +14,15 @@ import mbm.provider
 
 DEFAULT_GLOBAL_CONF_PATH = "~/.mbm"
 DEFAULT_ACCOUNTS_PATH = "~/.mbm/accounts"
+
+
+def logger(module_name):
+    logger = logging.getLogger(module_name)
+    logger.setLevel(logging.ERROR)
+    return logger
+
+
+log = logger(__name__)
 
 
 def expand_dir(dir):
@@ -65,10 +75,7 @@ class Config():
         self.config['DEFAULT'] = {}
         os.remove(self.file_path)
 
-    def new(self, updates=None):
-        updates = updates if updates else {}
-        self.config['DEFAULT'] = self.DEFAULT_CONFIG
-        self.config['DEFAULT'].update(updates)
+    def new(self):
         self.write()
 
     def write(self):
@@ -95,14 +102,18 @@ class Global(Config):
     def __init__(self, file_path, accounts_path):
         super().__init__(file_path)
         self.accounts_path = expand_dir(accounts_path)
-        # keys: account name = filename without extension
-        # values: Account objects made by the account factory method
-        self.accounts = {i.split("/")[-1][:-4]: account_factory(
-            self, os.path.join(self.accounts_path, i))
-            for i in os.listdir(self.accounts_path) if i.endswith(".ini")}
+        self.accounts = {}
+        for i in os.listdir(self.accounts_path):
+            if i.endswith(".ini"):
+                try:
+                    name = i.split("/")[-1][:-4]
+                    self.accounts[name] = account_factory(
+                        self, os.path.join(self.accounts_path, i))
+                except AccountException as e:
+                    log.error("Could not instantiate account "
+                              "'{}': {}".format(name, e))
+                    pass
 
-# TODO: The default for account_type has to be changed to None as soon as
-# other types exist
     def create_account(self, name, account_type='twitter'):
         if name in self.accounts:
             raise AccountException("Account {} already "
@@ -114,7 +125,16 @@ class Global(Config):
         return account
 
     def delete_account(self, name):
-        if name not in self.accounts:
+        if name not in self.accounts:  # in case of an errornous conf file
+            for i in os.listdir(self.accounts_path):
+                if i.endswith(".ini"):
+                    file_name = i.split("/")[-1][:-4]
+                    if file_name == name:
+                        config_path = os.path.join(
+                            self.accounts_path, name + ".ini")
+                        os.remove(config_path)
+                        log.info("Deleted errornous account '{}'".format(name))
+                        return
             raise AccountException("Unknown account '{}'".format(name))
         config_path = os.path.join(self.accounts_path, name + ".ini")
         account = account_factory(self, config_path)
@@ -160,7 +180,11 @@ def account_factory(global_conf, conf_file_path, account_type=None):
         except KeyError:
             raise AccountException(
                 "No type specified in config file {}".format(conf_file_path))
-    importlib.import_module("mbm.provider.{}".format(account_type))
+    try:
+        importlib.import_module("mbm.provider.{}".format(account_type))
+    except ImportError:
+        raise AccountException("Unknown account type '{}'".format(
+            account_type))
     provider = getattr(mbm.provider, account_type)
     return provider.Account(global_conf, conf_file_path, name)
 
@@ -172,18 +196,17 @@ class Account(Config, abc.ABC):
     """
 
     DEFAULT_CONFIG = {'username': '',
-                      'account_type': 'twitter',
+                      'account_type': '',
                       'token': '',
                       'token_secret': '',
                       }
 
-    def __init__(self, global_conf, file_path, name):
+    def __init__(self, global_conf, file_path, name, account_type):
         super().__init__(file_path)
         self.name = name
         self.global_conf = global_conf
-        if (self.config['DEFAULT']['account_type'] and
-            not global_conf.config.has_section(
-                self.config['DEFAULT']['account_type'])):
+        self.config['DEFAULT']['account_type'] = account_type
+        if not global_conf.config.has_section(account_type):
             global_conf.config.add_section(
                 self.config['DEFAULT']['account_type'])
             global_conf.config.set(self.config['DEFAULT']['account_type'],

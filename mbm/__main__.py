@@ -18,6 +18,9 @@ def parse_args(command_line):
     account_parser.add_argument("action",
                                 choices=["list", "new", "edit", "delete"],
                                 help="Account administration command")
+    account_parser.add_argument("-t", "--type", default="twitter",
+                                help="Account type (only applies to new "
+                                "command)")
     account_parser.add_argument("name", nargs="?", help="Account name")
     account_parser.set_defaults(func=manage_account)
 
@@ -94,7 +97,8 @@ def manage_account(args):
             for account_name in controller.global_conf.accounts:
                 print(account_name)
         elif args.action == "new":
-            controller.global_conf.create_account(args.name)
+            controller.global_conf.create_account(args.name,
+                                                  account_type=args.type)
             account = controller.global_conf.filter_accounts(
                 [args.name])[0]
             if not controller.global_conf.has_consumer_credentials(

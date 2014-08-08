@@ -37,7 +37,9 @@ class MainTestCase(unittest.TestCase):
         result = mbm.__main__.parse_args(account)
         result = filter(lambda x: x[0] != 'func', result.__dict__.items())
         self.assertDictEqual(dict(result), {'name': 'myaccount',
-                                            'action': 'list'})
+                                            'action': 'list',
+                                            'type': 'twitter',
+                                            })
 
     def test_args_post_text(self):
         text = shlex.split("post text --accounts=acc,acc2 --tags=tag,tag2"
@@ -68,40 +70,56 @@ class MainTestCase(unittest.TestCase):
     @patch('sys.stdout')
     def test_manage_account(self, stdout, check_call, filter, delete, create):
         mbm.__main__.manage_account(namespace({'action': 'new',
-                                               'name': None}))
+                                               'name': None,
+                                               'type': None,
+                                               }))
         sys.exit.assert_called_with(2)
         mbm.__main__.manage_account(namespace({'action': 'new',
-                                               'name': 'acc1'}))
-        create.assert_called_with("acc1")
+                                               'name': 'acc1',
+                                               'type': None,
+                                               }))
+        create.assert_called_with("acc1", account_type=None)
 
         mbm.__main__.controller.global_conf.accounts = {'acc1': 'fake'}
         mbm.__main__.manage_account(namespace({'action': 'list',
-                                               'name': None}))
+                                               'name': None,
+                                               'type': None,
+                                               }))
         stdout.assert_has_calls([call.write('acc1'), call.write('\n')])
 
         mbm.__main__.manage_account(namespace({'action': 'edit',
-                                               'name': 'acc1'}))
+                                               'name': 'acc1',
+                                               'type': None,
+                                               }))
         filter.assert_called_with(['acc1'])
         check_call.assert_called
         check_call.side_effect = FileNotFoundError
         mbm.__main__.manage_account(namespace({'action': 'edit',
-                                               'name': 'acc1'}))
+                                               'name': 'acc1',
+                                               'type': None,
+                                               }))
         sys.exit.assert_called_with(1)
         sys.exit.reset_mock()
         check_call.side_effect = subprocess.CalledProcessError(
             cmd='edit', returncode=1)
         mbm.__main__.manage_account(namespace({'action': 'edit',
-                                               'name': 'acc1'}))
+                                               'name': 'acc1',
+                                               'type': None,
+                                               }))
         sys.exit.assert_called_with(1)
         sys.exit.reset_mock()
         check_call.side_effect = None
 
         mbm.__main__.manage_account(namespace({'action': 'delete',
-                                               'name': 'acc1'}))
+                                               'name': 'acc1',
+                                               'type': None,
+                                               }))
         delete.assert_called_with('acc1')
         create.side_effect = mbm.config.AccountException
         mbm.__main__.manage_account(namespace({'action': 'new',
-                                               'name': 'acc1'}))
+                                               'name': 'acc1',
+                                               'type': None,
+                                               }))
         sys.exit.assert_called_with(2)
         sys.exit.reset_mock()
 

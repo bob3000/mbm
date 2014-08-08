@@ -1,27 +1,38 @@
+import unittest
 import configparser
 import os
 import os.path
-import unittest
 import tempfile
 import mbm.config
 import mbm.provider.tumblr
+
+from unittest.mock import MagicMock, call
 
 
 class GlobalConfigTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.real_tumblr_account = mbm.provider.tumblr.Account
-        mbm.provider.tumblr.Account = type(
-            "Account", (mbm.config.Account,),
-            {'get_model': lambda: "model",
-             'token_procurer_url': lambda: "url",
-             })
+        mbm.config.log = MagicMock()
         self.tmp_dir = tempfile.TemporaryDirectory()
         self.conf_file = os.path.join(self.tmp_dir.name, 'test_config.ini')
         self.accounts_dir = os.path.join(self.tmp_dir.name, "accounts")
         os.mkdir(self.accounts_dir)
         self.verify_cfg = configparser.ConfigParser()
         self.config = mbm.config.Global(self.conf_file, self.accounts_dir)
+
+        self.real_tumblr_account = mbm.provider.tumblr.Account
+
+        class FakeAccount(mbm.config.Account):
+            def __init__(self, global_conf, file_path, name):
+                super().__init__(global_conf, file_path, name, "tumblr")
+
+            def get_model(self):  # pragma: nocover
+                return "model"
+
+            def token_procurer_url(self):  # pragma: nocover
+                return "url"
+
+        mbm.provider.tumblr.Account = FakeAccount
 
     def test_prepare_conf_dirs(self):
         global_conf_path = os.path.join(self.tmp_dir.name, "c", "my_conf")
@@ -39,6 +50,21 @@ class GlobalConfigTestCase(unittest.TestCase):
         os.chmod(global_conf_path.rsplit("/", maxsplit=1)[0], 0o444)
         with self.assertRaises(RuntimeError):
             mbm.config.prepare_conf_dirs(global_conf_path, accounts_path)
+
+    def test_broken_config(self):
+        cp = configparser.ConfigParser()
+        cp['DEFAULT']['account_type'] = 'unknown_type'
+        with open(self.accounts_dir + '/error_account.ini', 'w') as f:
+            cp.write(f)
+        error_conf = mbm.config.Global(self.conf_file, self.accounts_dir)
+        error_conf.delete_account("error_account")
+        self.assertListEqual(mbm.config.log.mock_calls,
+                             [call.error("Could not instantiate account 'error"
+                                         "_account': Unknown account type 'unk"
+                                         "nown_type'"),
+                              call.info("Deleted errornous account 'error_acco"
+                                        "unt'")])
+        mbm.config.log.mock_reset()
 
     def test_accounts(self):
         self.config.new()
