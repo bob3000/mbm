@@ -56,7 +56,7 @@ class TumblrTestCase(unittest.TestCase):
         self.account.api.post.assert_called_with(
             post_data='body=body%20text&tags=tag1%20tag2&title=title&type='
             'text',
-            http_headers={'Accept-Encoding': 'gzip'}
+            headers={'Accept-Encoding': 'gzip'}
         )
         self.account.api.post = MagicMock(return_value=self.error_api_response)
         with self.assertRaises(mbm.provider.tumblr.TumblrException):
@@ -100,18 +100,18 @@ class TumblrTestCase(unittest.TestCase):
             'og-Magic#=#1548a043-dfb0-47bc-8741-22d3dd92e760\r\nContent-Dispos'
             'ition: form-data; name="type"\r\n\r\nphoto\r\n--#=#Micro-Bog-Magi'
             'c#=#1548a043-dfb0-47bc-8741-22d3dd92e760--',
-            http_headers={'Content-Type': 'multipart/form-data; boundary=#=#Mi'
-                          'cro-Bog-Magic#=#1548a043-dfb0-47bc-8741-22d3dd92e76'
-                          '0', 'Accept-Encoding': 'gzip'}
+            headers={'Content-Type': 'multipart/form-data; boundary=#=#Mi'
+                     'cro-Bog-Magic#=#1548a043-dfb0-47bc-8741-22d3dd92e76'
+                     '0', 'Accept-Encoding': 'gzip'}
         )
         photo = mbm.provider.tumblr.Photo(self.account, "caption", "link",
                                           "tags",
                                           data="mbm/tests/fixtures/blue.png")
         photo.post()
         self.account.api.post.assert_called_with(
-            http_headers={'Content-Type': 'multipart/form-data; boundary=#=#Mi'
-                          'cro-Bog-Magic#=#1548a043-dfb0-47bc-8741-22d3dd92e76'
-                          '0', 'Accept-Encoding': 'gzip'},
+            headers={'Content-Type': 'multipart/form-data; boundary=#=#Mi'
+                     'cro-Bog-Magic#=#1548a043-dfb0-47bc-8741-22d3dd92e76'
+                     '0', 'Accept-Encoding': 'gzip'},
             post_data='--#=#Micro-Bog-Magic#=#1548a043-dfb0-47bc-8741-22d3dd92'
             'e760\r\nContent-Disposition: form-data; name="caption"\r\n\r\ncap'
             'tion\r\n--#=#Micro-Bog-Magic#=#1548a043-dfb0-47bc-8741-22d3dd92e7'

@@ -54,10 +54,10 @@ class Post(mbm.datatype.Post):
         try:
             if 'media[]' in self.post_data:
                 res = self.account.api.statuses.update_with_media(
-                    post_data=self.payload, http_headers=self.http_headers)
+                    post_data=self.payload, headers=self.headers)
             else:
                 res = self.account.api.statuses.update(
-                    post_data=self.payload, http_headers=self.http_headers)
+                    post_data=self.payload, headers=self.headers)
         except mbm.lib.api.ApiException as e:
             raise TwitterException(e)
         if res.code != 200:

@@ -10,7 +10,7 @@ class Post(abc.ABC):
 
     def __init__(self, account):
         self.post_data = {}
-        self.http_headers = {}
+        self.headers = {}
         self.payload = ""
         self.account = account
 
@@ -22,7 +22,7 @@ class Post(abc.ABC):
         self.post_data.update(data)
 
     def update_headers(self, headers):
-        self.http_headers.update(headers)
+        self.headers.update(headers)
 
     def multipart_payload(self, b64_keys=""):
         b64_keys = b64_keys or []

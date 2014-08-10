@@ -58,10 +58,10 @@ class Post(mbm.datatype.Post):
         try:
             if 'data' in self.post_data:
                 res = self.account.api.post(
-                    post_data=self.payload, http_headers=self.http_headers)
+                    post_data=self.payload, headers=self.headers)
             else:
                 res = self.account.api.post(
-                    post_data=self.payload, http_headers=self.http_headers)
+                    post_data=self.payload, headers=self.headers)
         except mbm.lib.api.ApiException as e:
             raise TumblrException(e)
         if res.code != 200:

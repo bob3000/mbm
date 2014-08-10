@@ -38,17 +38,16 @@ class Api():
         self.current_route += "/" + name
         return self
 
-    def __call__(self, post_data="", http_headers="", **kwargs):
+    def __call__(self, params=None, post_data=None, headers=None):
+        params = params or {}
         post_data = post_data or {}
-        headers = http_headers or {}
-        exclude = ["post_data", "headers"]
-        params = {k: v for k, v in kwargs.items() if k not in exclude}
+        headers = headers or {}
         url = self._url_from_method(params)
         if post_data:
             req = urllib.request.Request(
                 url, headers=headers, data=post_data.encode(), method="POST")
         else:
-            req = urllib.request.Request(url, headers=http_headers,
+            req = urllib.request.Request(url, headers=headers,
                                          method="GET")
         try:
             exclude_params = ('multipart/form-data' in

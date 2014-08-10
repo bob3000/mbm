@@ -30,14 +30,14 @@ class ApiTestCase(unittest.TestCase):
 
     def test_api_call(self):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")
-        api.posts.queue(api_key="asdf98", some="value")
+        api.posts.queue(params={'api_key': 'asdf98', 'some': 'value'})
         urllib.request.Request.assert_called_with(
             'http://some.url/posts/queue?api_key=asdf98&some=value',
-            method='GET', headers='')
+            method='GET', headers={})
 
     def test_api_call_with_payload(self):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")
-        api.posts(api_key="asdf98",
+        api.posts(params={'api_key': 'asdf98'},
                   post_data='{"type": "text", "title": "My new bike"}')
         urllib.request.Request.assert_called_with(
             'http://some.url/posts?api_key=asdf98',
@@ -51,7 +51,7 @@ class ApiTestCase(unittest.TestCase):
         attrs = {'urlopen.return_value': self.http_response}
         urllib.request.configure_mock(**attrs)
         with self.assertRaises(mbm.lib.api.ApiException):
-            api.posts_queue(api_key="asdf98", some="value")
+            api.posts_queue(params={'api_key': 'asdf98', 'some': 'value'})
 
     def test_wrong_payload(self):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")
@@ -59,14 +59,14 @@ class ApiTestCase(unittest.TestCase):
         attrs = {'urlopen.return_value': self.http_response}
         urllib.request.configure_mock(**attrs)
         with self.assertRaises(mbm.lib.api.ApiException):
-            api.posts_queue(api_key="asdf98", some="value")
+            api.posts_queue(params={'api_key': 'asdf98', 'some': 'value'})
 
     def test_http_error(self):
         api = mbm.lib.api.Api(self.oauth, "http://some.url")
         attrs = {'urlopen.side_effect': mbm.lib.oauth.OAuthException}
         urllib.request.configure_mock(**attrs)
         with self.assertRaises(mbm.lib.api.ApiException):
-            api.posts_queue(api_key="asdf98", some="value")
+            api.posts_queue(params={'api_key': 'asdf98', 'some': 'value'})
 
     def tearDown(self):
         urllib.request = self.request

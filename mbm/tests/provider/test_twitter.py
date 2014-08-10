@@ -90,9 +90,9 @@ class twitterTestCase(unittest.TestCase):
             data="mbm/tests/fixtures/blue.png")
         photo.post()
         self.account.api.statuses.update_with_media.assert_called_with(
-            http_headers={'Accept-Encoding': 'gzip', 'Content-Type': 'multipar'
-                          't/form-data; boundary=#=#Micro-Bog-Magic#=#b9b52cfc'
-                          '-fa00-4053-b872-7284272b932d'},
+            headers={'Accept-Encoding': 'gzip', 'Content-Type': 'multipar'
+                     't/form-data; boundary=#=#Micro-Bog-Magic#=#b9b52cfc'
+                     '-fa00-4053-b872-7284272b932d'},
             post_data='--#=#Micro-Bog-Magic#=#b9b52cfc-fa00-4053-b872-7284272b'
             '932d\r\nContent-Disposition: form-data; name="media[]"\r\nContent'
             '-Transfer-Encoding: base64\r\n\r\niVBORw0KGgoAAAANSUhEUgAAAAUAAAA'
@@ -107,9 +107,9 @@ class twitterTestCase(unittest.TestCase):
                                            data="mbm/tests/fixtures/blue.png")
         photo.post()
         self.account.api.statuses.update_with_media.assert_called_with(
-            http_headers={'Accept-Encoding': 'gzip', 'Content-Type': 'multipar'
-                          't/form-data; boundary=#=#Micro-Bog-Magic#=#b9b52cfc'
-                          '-fa00-4053-b872-7284272b932d'},
+            headers={'Accept-Encoding': 'gzip', 'Content-Type': 'multipar'
+                     't/form-data; boundary=#=#Micro-Bog-Magic#=#b9b52cfc'
+                     '-fa00-4053-b872-7284272b932d'},
             post_data='--#=#Micro-Bog-Magic#=#b9b52cfc-fa00-4053-b872-7284272b'
             '932d\r\nContent-Disposition: form-data; name="media[]"\r\nContent'
             '-Transfer-Encoding: base64\r\n\r\niVBORw0KGgoAAAANSUhEUgAAAAUAAAA'
