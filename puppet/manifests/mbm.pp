@@ -28,6 +28,11 @@ class base {
         target => "/home/vagrant/mbm/completion/mbm",
     }
 
+    file { "/usr/share/man/man1/mbm.1":
+        ensure => "link",
+        target => "/home/vagrant/mbm/man/mbm.1",
+    }
+
     # basic dependencies
     package { "python3": }
     package { "python-dev": }
