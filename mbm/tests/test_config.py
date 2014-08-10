@@ -4,7 +4,7 @@ import os
 import os.path
 import tempfile
 import mbm.config
-import mbm.provider.tumblr
+import mbm.provider.twitter
 
 from unittest.mock import MagicMock, call
 
@@ -20,11 +20,11 @@ class GlobalConfigTestCase(unittest.TestCase):
         self.verify_cfg = configparser.ConfigParser()
         self.config = mbm.config.Global(self.conf_file, self.accounts_dir)
 
-        self.real_tumblr_account = mbm.provider.tumblr.Account
+        self.real_twitter_account = mbm.provider.twitter.Account
 
         class FakeAccount(mbm.config.Account):
             def __init__(self, global_conf, file_path, name):
-                super().__init__(global_conf, file_path, name, "tumblr")
+                super().__init__(global_conf, file_path, name, "twitter")
 
             def get_model(self):  # pragma: nocover
                 return "model"
@@ -32,7 +32,7 @@ class GlobalConfigTestCase(unittest.TestCase):
             def token_procurer_url(self):  # pragma: nocover
                 return "url"
 
-        mbm.provider.tumblr.Account = FakeAccount
+        mbm.provider.twitter.Account = FakeAccount
 
     def test_prepare_conf_dirs(self):
         global_conf_path = os.path.join(self.tmp_dir.name, "c", "my_conf")
@@ -75,7 +75,7 @@ class GlobalConfigTestCase(unittest.TestCase):
 
         self.assertListEqual(os.listdir(self.accounts_dir), [])
         self.assertDictEqual(self.config.accounts, {})
-        self.config.create_account("account1", account_type="tumblr")
+        self.config.create_account("account1", account_type="twitter")
         self.assertIn("account1", self.config.accounts)
         self.assertListEqual(os.listdir(self.accounts_dir), ["account1.ini"])
         with self.assertRaises(mbm.config.AccountException):
@@ -127,4 +127,4 @@ class GlobalConfigTestCase(unittest.TestCase):
 
     def tearDown(self):
         self.tmp_dir.cleanup()
-        mbm.provider.tumblr.Account = self.real_tumblr_account
+        mbm.provider.twitter.Account = self.real_twitter_account
