@@ -15,13 +15,13 @@ currently still under heavy development.
 - [Getting started](#getting-started)
     - [Requirements](#requirements)
     - [Bootstrap](#bootstrap)
-- [Documentation](#documtation)
+- [Documentation](#documentation)
     - [Command line help](#command-line-help)
     - [Manpage](#manpage)
     - [Doctest](#doctest)
 - [Hacking](#hacking)
     - [Makefile](#makefile)
-    - [Running tests](#running-test)
+    - [Running the tests](#running-the-tests)
     - [Cleaning up](#cleaning-up)
 - [Bugs](#bugs)
 
@@ -29,16 +29,16 @@ currently still under heavy development.
 
 ### Current
 
-    - post updates to twitter
-    - post photos to twitter
+- post updates to twitter
+- post photos to twitter
 
 ### Future
 
-    - tumblr support
-    - read timelines and actively listen for updates
-    - follower/friends management
-    - facebook timeline updates support
-    - other micro blogs
+- tumblr support
+- read timelines and actively listen for updates
+- follower/friends management
+- facebook timeline updates support
+- other micro blogs
 
 ## Getting started
 
