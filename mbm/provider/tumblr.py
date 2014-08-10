@@ -48,6 +48,7 @@ class Account(mbm.config.Account):
 class Post(mbm.datatype.Post):
 
     def __init__(self, account, post_type, tags):
+        super().__init__(account)
         self.account = account
         self.post_data = {'type': post_type,
                           'tags': tags,
@@ -55,7 +56,12 @@ class Post(mbm.datatype.Post):
 
     def post(self):
         try:
-            res = self.account.api.post(post_data=self.post_data)
+            if 'data' in self.post_data:
+                res = self.account.api.post(
+                    post_data=self.payload, http_headers=self.http_headers)
+            else:
+                res = self.account.api.post(
+                    post_data=self.payload, http_headers=self.http_headers)
         except mbm.lib.api.ApiException as e:
             raise TumblrException(e)
         if res.code != 200:
@@ -71,6 +77,7 @@ class Text(Post):
         self.update_data({'title': title,
                           'body': body,
                           })
+        self.x_www_form_payload()
 
 
 class Photo(Post):
@@ -86,8 +93,9 @@ class Photo(Post):
             self.update_data({'source': source})
         else:
             with open(data, 'rb') as f:
-                photo = base64.b64encode(f.read())
-            self.update_data({'data': photo.decode()})
+                photo = base64.b64encode(f.read()).decode()
+            self.update_data({'data': photo})
+        self.multipart_payload(b64_keys=['data'])
 
 
 class TumblrException(mbm.datatype.ProviderException):
